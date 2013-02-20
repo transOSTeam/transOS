@@ -29,15 +29,26 @@ public class Disk {
 	}
 	
 	private static void initializeInodes() {
-		for(int i = inodeStartBlock; i <= inodeEndBlock; i++){
-			try {
+		for(int i = 10; i <= 10; i++){
+			/*try {
 				RandomAccessFile navi = new RandomAccessFile(homeDir.toString() + "/TransDisk/" + String.format("%05d", i), "rw");
 				navi.setLength(500);
+				Inode test = new Inode();
+				
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();	//if file size exceeds 500 bytes
+			}*/
+			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i));
+			if(!f.exists()){
+				System.out.println("Fatal Error...block " +i+ " not present");
 			}
+			else{
+				Inode test = new Inode();
+				test.writeToFile(f);
+			}
+			System.out.println("to");
 		}
 	}
 
