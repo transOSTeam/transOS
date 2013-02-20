@@ -2,10 +2,8 @@ package backend;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 
 public class Disk {
@@ -29,17 +27,7 @@ public class Disk {
 	}
 	
 	private static void initializeInodes() {
-		for(int i = 10; i <= 10; i++){
-			/*try {
-				RandomAccessFile navi = new RandomAccessFile(homeDir.toString() + "/TransDisk/" + String.format("%05d", i), "rw");
-				navi.setLength(500);
-				Inode test = new Inode();
-				
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();	//if file size exceeds 500 bytes
-			}*/
+		for(int i = inodeStartBlock; i <= inodeEndBlock; i++){
 			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i));
 			if(!f.exists()){
 				System.out.println("Fatal Error...block " +i+ " not present");
@@ -48,7 +36,6 @@ public class Disk {
 				Inode test = new Inode();
 				test.writeToFile(f);
 			}
-			System.out.println("to");
 		}
 	}
 
@@ -101,8 +88,6 @@ public class Disk {
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(content);
 			bw.close();
- 
-			System.out.println("Done" + partitionTable.toString());
  
 		} catch (IOException e) {
 			e.printStackTrace();

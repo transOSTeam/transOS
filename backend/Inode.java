@@ -37,16 +37,19 @@ public class Inode {
 	}
 
 	public void writeToFile(File f) {
-		String content = this.blockCount+"\n"+this.fileType+"\n"+this.grpId+"\n"+this.hardLinkCount+"\n"+this.inodeNumber+"\n"+this.refCount+"\n"+this.userId+"\n"+this.accessedTime+"\n"+this.active+"\n"+this.createdTime+"\n"+this.modifyTime+"\n"+this.permission;
-		
-		FileWriter fw;
-		try {
-			fw = new FileWriter(f.getAbsoluteFile(), true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(content);
-			bw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		long fileSize = f.length();
+		String content = this.blockCount+"\n"+this.fileType+"\n"+this.grpId+"\n"+this.hardLinkCount+"\n"+this.inodeNumber+"\n"+this.refCount+"\n"+this.userId+"\n"+this.accessedTime+"\n"+this.active+"\n"+this.createdTime+"\n"+this.modifyTime+"\n"+this.permission[0]+this.permission[1]+this.permission[2];
+		while(fileSize <= kickStart.maxBlockSize - content.length()) {
+			fileSize += content.length();
+			FileWriter fw;
+			try {
+				fw = new FileWriter(f.getAbsoluteFile(), true);
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write(content);
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
