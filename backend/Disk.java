@@ -39,7 +39,7 @@ public class Disk {
 	}
 	
 	private static void createBlocks(){
-		int noOfBlocks = kickStart.diskSize*1000/kickStart.maxBlockSize;
+		int noOfBlocks = kickStart.diskSize*1000*1000/kickStart.maxBlockSize;
 		for(int i = 0; i < noOfBlocks; i++){
 			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i));
 			if(!f.exists()){
@@ -66,7 +66,7 @@ public class Disk {
 			}
 			
 			//_________Hard coding partition___________________
-			content = "\n11111\t" + String.format("%05d", 1) + "\t" + String.format("%05d", 10);
+			content = "11111\t" + String.format("%05d", 1) + "\t" + String.format("%05d", 10);
 			
 			FileWriter fw = new FileWriter(partitionTable.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
