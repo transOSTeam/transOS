@@ -4,8 +4,8 @@ import java.io.File;
 
 
 public class kickStart {
-	public static final int maxBlockSize = 500;	// in KB
-	public static final int diskSize = 10;			// in MB
+	public static final int maxBlockSize = 500;	// in B
+	public static final int diskSize = 1;			// in MB
 	
 	public static void main(String[] args) {
 		kickStart.chkDisk();
