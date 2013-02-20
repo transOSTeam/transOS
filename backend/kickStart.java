@@ -4,6 +4,7 @@ import java.io.File;
 
 
 public class kickStart {
+
 	public static final int maxBlockSize = 500;	// in B
 	public static final int diskSize = 1;			// in MB
 	
