@@ -1,5 +1,9 @@
 package backend;
 
-public class Block {
+import java.io.File;
 
+public class Block {
+	Block(File blockFile){
+		
+	}
 }

@@ -4,16 +4,22 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Scanner;
 
 
 public class Disk {
 	
 	public static final File homeDir = new File(System.getProperty("user.home"));	
 	public static final File transDisk = new File(homeDir.toString() + "/TransDisk");
+	
+	private static final String rootDirInodeNum = "5";
+	
 	private static final int inodeStartBlock = 5;
 	private static final int inodeEndBlock = 50;
 	
 	private static final int partitionTableAddress = 0;
+	
+	private static int tempNo = 0;
 	/*
 	public Disk(){
 		createRoot();
@@ -24,13 +30,21 @@ public class Disk {
 		createBlocks();
 		makePartitionTable();
 		initializeInodes();
+		
+		createRootDir();
 	}
 	
+	private static void createRootDir() {
+		File tempFile = new File(homeDir.toString() + "/TransDisk/temp" + tempNo++);
+		Scanner sc = new Scanner(homeDir.toString() + "/TransDisk/"+String.format("%05d", rootDirInodeNum));
+		
+	}
+
 	private static void initializeInodes() {
 		for(int i = inodeStartBlock; i <= inodeEndBlock; i++){
 			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i));
 			if(!f.exists()){
-				System.out.println("Fatal Error...block " +i+ " not present");
+				System.out.println("Fatal Error...block "+i+" not present");
 			}
 			else{
 				Inode test = new Inode();
