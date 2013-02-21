@@ -7,20 +7,27 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JTextArea;
 
-public class GuiStarter{
-	JFrame frame = new JFrame("Transparent OS");
+public class TextEditor {
+	JFrame frame = new JFrame("TEdit");
+	JTextArea area =  new JTextArea();
 	JMenuBar menuBar = new JMenuBar();
 	JMenu file = new JMenu("File");
 	JMenu edit = new JMenu("Edit");
 	JMenuItem newFile = new JMenuItem("New");
 	JMenuItem exit = new JMenuItem("Exit");
 	
-	public GuiStarter(){
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+	public TextEditor() {
+		frame.setBounds(50, 50, 500, 500);
 		frame.setVisible(true);
 		addMenuBar();
 		addMenuItems();
+		addTextArea();
+	}
+	
+	private void addTextArea(){
+		frame.add(area);		
 	}
 	
 	private void addMenuBar(){
@@ -37,15 +44,9 @@ public class GuiStarter{
 		//action listeners for menu items
 		exit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
+				frame.dispose();
 			}
 		});
 		
-		newFile.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				//call text editor here
-				new TextEditor();
-			}
-		});
 	}
 }
