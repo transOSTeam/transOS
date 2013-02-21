@@ -2,6 +2,8 @@ package backend;
 
 import java.io.File;
 
+import frontend.GuiStarter;
+
 
 public class kickStart {
 
@@ -11,6 +13,7 @@ public class kickStart {
 	public static void main(String[] args) {
 		kickStart.chkDisk();
 		//start GUI
+		new GuiStarter();
 	}
 	
 	private static void chkDisk(){
