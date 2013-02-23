@@ -12,32 +12,30 @@ public class Disk {
 	public static final File homeDir = new File(System.getProperty("user.home"));	
 	public static final File transDisk = new File(homeDir.toString() + "/TransDisk");
 	
-	private static final String rootDirInodeNum = "5";
+	public static final int maxBlockSize = 500;											// in B
+	public static final int diskSize = 1;												// in MB
+	public static final int noOfBlocks = Disk.diskSize*1000*1000/Disk.maxBlockSize;
 	
-	private static final int inodeStartBlock = 5;
-	private static final int inodeEndBlock = 50;
+	public static final int inodeStartBlock = 5;
+	public static final int inodeEndBlock = 50;
 	
 	private static final int partitionTableAddress = 0;
+	public static final int superBlockAddress = 2;		
 	
-	private static int tempNo = 0;
-	/*
-	public Disk(){
-		createRoot();
-		createBlocks();
-	}*/
+	public static int tempFileCounter = 0;
+	
 	public static void createDisk(){
 		createRoot();
 		createBlocks();
 		makePartitionTable();
 		initializeInodes();
-		
+		FreeSpaceMgnt.initBitmap(4);		//part of boot-up
 		createRootDir();
 	}
 	
 	private static void createRootDir() {
-		File tempFile = new File(homeDir.toString() + "/TransDisk/temp" + tempNo++);
-		Scanner sc = new Scanner(homeDir.toString() + "/TransDisk/"+String.format("%05d", rootDirInodeNum));
-		
+		Inode rootDirInode = new Inode(0,0,0,7,4,4,'d');
+		rootDirInode.writeToDisk();
 	}
 
 	private static void initializeInodes() {
@@ -47,8 +45,7 @@ public class Disk {
 				System.out.println("Fatal Error...block "+i+" not present");
 			}
 			else{
-				Inode test = new Inode();
-				test.writeToFile(f);
+				Inode.resetInodeBlock(f);
 			}
 		}
 	}
@@ -69,7 +66,7 @@ public class Disk {
 	}
 	
 	private static void createBlocks(){
-		int noOfBlocks = kickStart.diskSize*1000*1000/kickStart.maxBlockSize;
+		int noOfBlocks = Disk.noOfBlocks;
 		for(int i = 0; i < noOfBlocks; i++){
 			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i));
 			if(!f.exists()){

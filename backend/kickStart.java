@@ -6,13 +6,11 @@ import frontend.GuiStarter;
 
 public class kickStart {
 
-	public static final int maxBlockSize = 500;	// in B
-	public static final int diskSize = 1;			// in MB
-
+	
 	public static void main(String[] args) {
 		kickStart.chkDisk();
 		//start GUI
-		new GuiStarter();
+		//new GuiStarter();
 	}
 
 	private static void chkDisk(){
@@ -21,5 +19,7 @@ public class kickStart {
 		//if(!disk.exists()){
 			Disk.createDisk();
 		//}
+		//else
+			//Disk.bootUp();
 	}
 }
