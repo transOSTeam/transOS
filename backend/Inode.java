@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Scanner;
 
 public class Inode {
 	private static int inodeNumberCounter = 0;

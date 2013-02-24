@@ -2,9 +2,9 @@ package backend;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Scanner;
 
 
 public class Disk {
@@ -20,7 +20,7 @@ public class Disk {
 	public static final int inodeEndBlock = 50;
 	
 	private static final int partitionTableAddress = 0;
-	public static final int superBlockAddress = 2;		
+	private static final int superBlockAddress = 2;
 	
 	public static int tempFileCounter = 0;
 	
@@ -29,10 +29,31 @@ public class Disk {
 		createBlocks();
 		makePartitionTable();
 		initializeInodes();
-		FreeSpaceMgnt.initBitmap(4);		//part of boot-up
+		initializeFreeSpaceMgnt();
 		createRootDir();
 	}
 	
+	private static void initializeFreeSpaceMgnt() {
+		try {
+			Block superBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
+			superBlock.readLine();
+			int freeBlockBitmapNo = Integer.parseInt(superBlock.readLine());
+			byte[] freeSpaceBitmapContent = new byte[Disk.noOfBlocks];
+			for(int i = 0; i <= Disk.inodeEndBlock; i++)
+				freeSpaceBitmapContent[i] = 49;				//in ASCII 49 is 1
+			for(int i = Disk.inodeEndBlock+1; i < Disk.noOfBlocks; i++)
+				freeSpaceBitmapContent[i] = 48;
+			Block bitmapBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo),"rw");
+			bitmapBlock.write(freeSpaceBitmapContent);
+			superBlock.close();
+			bitmapBlock.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private static void createRootDir() {
 		Inode rootDirInode = new Inode(0,0,0,7,4,4,'d');
 		rootDirInode.writeToDisk();
@@ -103,5 +124,39 @@ public class Disk {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		try {
+			final int fsBitmapAddress = 4;
+			Block superBlock = new Block(Disk.transDisk + "/" +String.format("%05d", Disk.superBlockAddress),"rw");
+			String content = Disk.noOfBlocks + "\n" + fsBitmapAddress;
+			superBlock.write(content.getBytes());
+			superBlock.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	public static void bootUp() {
+		Block superBlock = null;
+		try {
+			superBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			superBlock.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		int freeBlockBitmapNo;
+		try {
+			freeBlockBitmapNo = Integer.parseInt(superBlock.readLine());
+		} catch (NumberFormatException | IOException e) {
+			freeBlockBitmapNo = 4;
+			e.printStackTrace();
+		}
+		FreeSpaceMgnt.initBitmap(freeBlockBitmapNo);		//part of boot-up
 	}
 }
