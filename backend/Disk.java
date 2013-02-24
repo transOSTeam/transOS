@@ -16,8 +16,8 @@ public class Disk {
 	public static final int diskSize = 1;												// in MB
 	public static final int noOfBlocks = Disk.diskSize*1000*1000/Disk.maxBlockSize;
 	
-	public static final int inodeStartBlock = 5;
-	public static final int inodeEndBlock = 50;
+	public static final int inodeStartBlock = 10;
+	public static final int inodeEndBlock = 100;
 	
 	private static final int partitionTableAddress = 0;
 	private static final int superBlockAddress = 2;
@@ -35,18 +35,34 @@ public class Disk {
 	
 	private static void initializeFreeSpaceMgnt() {
 		try {
+			int noOfBlocksBitmap = 4; 					// hard code: 2000sized bitmap will require 4 blocks of 500
 			Block superBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
 			superBlock.readLine();
-			int freeBlockBitmapNo = Integer.parseInt(superBlock.readLine());
-			byte[] freeSpaceBitmapContent = new byte[Disk.noOfBlocks];
-			for(int i = 0; i <= Disk.inodeEndBlock; i++)
-				freeSpaceBitmapContent[i] = 49;				//in ASCII 49 is 1
-			for(int i = Disk.inodeEndBlock+1; i < Disk.noOfBlocks; i++)
-				freeSpaceBitmapContent[i] = 48;
-			Block bitmapBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo),"rw");
-			bitmapBlock.write(freeSpaceBitmapContent);
+			int[] freeBlockBitmapNo = new int[noOfBlocksBitmap];
+			String tempStr = superBlock.readLine();
+			for(int i = 0; i < noOfBlocksBitmap; i++)
+				freeBlockBitmapNo[i] = Integer.parseInt(tempStr.substring(i, i+1));
 			superBlock.close();
-			bitmapBlock.close();
+			
+			byte[][] freeSpaceBitmapContent = new byte[4][];
+			for(int i = 0; i < 4; i++)
+				freeSpaceBitmapContent[i] = new byte[Disk.maxBlockSize];
+			
+			int i = 0;
+			for(int k = 0; k < 4; k++) {
+				for(int j = i % Disk.maxBlockSize; j < Disk.maxBlockSize; j++, i++) {
+					if(i < Disk.inodeEndBlock)				//all blocks up to last Inode block are considered to be system used and not available for user date
+						freeSpaceBitmapContent[k][j] = 49;	//in ASCII 49 is 1
+					else
+						freeSpaceBitmapContent[k][j] = 48;
+				}
+			}
+			
+			for(i = 0; i < 4; i++) {
+				Block bitmapBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo[i]),"rw");
+				bitmapBlock.write(freeSpaceBitmapContent[i]);
+				bitmapBlock.close();
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -125,7 +141,7 @@ public class Disk {
 			e.printStackTrace();
 		}
 		try {
-			final int fsBitmapAddress = 4;
+			final String fsBitmapAddress = "5678";
 			Block superBlock = new Block(Disk.transDisk + "/" +String.format("%05d", Disk.superBlockAddress),"rw");
 			String content = Disk.noOfBlocks + "\n" + fsBitmapAddress;
 			superBlock.write(content.getBytes());
@@ -150,11 +166,13 @@ public class Disk {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		int freeBlockBitmapNo;
+		int[] freeBlockBitmapNo = new int[4];
 		try {
-			freeBlockBitmapNo = Integer.parseInt(superBlock.readLine());
+			String bitmap = superBlock.readLine();
+			for(int i = 0; i < 4; i++) {
+				freeBlockBitmapNo[i] = Integer.parseInt(bitmap.substring(i, i+1));
+			}
 		} catch (NumberFormatException | IOException e) {
-			freeBlockBitmapNo = 4;
 			e.printStackTrace();
 		}
 		FreeSpaceMgnt.initBitmap(freeBlockBitmapNo);		//part of boot-up

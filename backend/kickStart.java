@@ -9,7 +9,7 @@ public class kickStart {
 	
 	public static void main(String[] args) {
 		kickStart.chkDisk();
-		Disk.bootUp();
+		//Disk.bootUp();
 		//start GUI
 		//new GuiStarter();
 	}
@@ -17,8 +17,8 @@ public class kickStart {
 	private static void chkDisk(){
 		File disk = Disk.transDisk;
 
-		if(!disk.exists()){
+		//if(!disk.exists()){
 			Disk.createDisk();
-		}
+		//}
 	}
 }

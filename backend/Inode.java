@@ -8,23 +8,23 @@ import java.io.IOException;
 import java.sql.Timestamp;
 
 public class Inode {
-	private static int inodeNumberCounter = 0;
-	public static int inodeSize = 118;
-	//public static int numOfFields = 17; 
+	private static int inodeNumberCounter = 0; 
 	
-	private int signature;					// 0 inactive, 1 Inode, 2 single indirect data block, 3 double indirect and so on...
-	private int inodeNumber;
-	private int refCount;					// i have no idea what's this for
-	private int hardLinkCount;
-	private int userId;
-	private int grpId;
-	private Timestamp accessedTime;
-	private Timestamp modifyTime;
-	private Timestamp createdTime;
-	private int blockCount;
-	private int permission[];
-	private char fileType;
-	private int[] blockPointers;
+	private int signature;					// 1 |0 inactive, 1 Inode, 2 single indirect data block, 3 double indirect and so on...
+	private int inodeNumber;				// 3
+	private int refCount;					// 2 | I have no idea what's this for
+	private int hardLinkCount;				// 2
+	private int userId;						// 3
+	private int grpId;						// 3
+	private Timestamp accessedTime;			// 19
+	private Timestamp modifyTime;			// 19
+	private Timestamp createdTime;			// 19
+	private int blockCount;					// 2
+	private int permission[];				// 3
+	private char fileType;					// 1
+	private int[] blockPointers;			// 5X5 = 25
+	//16 bytes for \n. So total inodeSize = 118
+	public static final int inodeSize = 118;
 	
 	Inode(){
 		signature = 0;
@@ -65,13 +65,12 @@ public class Inode {
 		long fileSize = f.length();
 		boolean firstWrite = false;
 		
-		Inode tempInode = new Inode();
-		String content = String.format("%03d", tempInode.inodeNumber)+"\n"+tempInode.signature+"\n"+String.format("%02d", tempInode.blockCount)+"\n"+tempInode.fileType+"\n"+String.format("%03d", tempInode.grpId)+"\n"+String.format("%02d", tempInode.hardLinkCount);
-		content += "\n"+String.format("%02d", tempInode.refCount)+"\n"+String.format("%03d", tempInode.userId)+"\n";
-		content += tempInode.accessedTime.toString().substring(0, 19)+"\n"+tempInode.createdTime.toString().substring(0, 19)+"\n"+tempInode.modifyTime.toString().substring(0, 19)+"\n"+tempInode.permission[0]+tempInode.permission[1]+tempInode.permission[2]+"\n"+String.format("%05d", tempInode.blockPointers[0]);
-		content += "\n"+String.format("%05d", tempInode.blockPointers[1])+"\n"+String.format("%05d", tempInode.blockPointers[2])+"\n"+String.format("%05d", tempInode.blockPointers[3])+"\n"+String.format("%05d", tempInode.blockPointers[4]);
-		
-		while(fileSize <= Disk.maxBlockSize - content.length()) {
+		while(fileSize <= Disk.maxBlockSize - Inode.inodeSize) {
+			Inode tempInode = new Inode();
+			String content = String.format("%03d", tempInode.inodeNumber)+"\n"+tempInode.signature+"\n"+String.format("%02d", tempInode.blockCount)+"\n"+tempInode.fileType+"\n"+String.format("%03d", tempInode.grpId)+"\n"+String.format("%02d", tempInode.hardLinkCount);
+			content += "\n"+String.format("%02d", tempInode.refCount)+"\n"+String.format("%03d", tempInode.userId)+"\n";
+			content += tempInode.accessedTime.toString().substring(0, 19)+"\n"+tempInode.createdTime.toString().substring(0, 19)+"\n"+tempInode.modifyTime.toString().substring(0, 19)+"\n"+tempInode.permission[0]+tempInode.permission[1]+tempInode.permission[2]+"\n"+String.format("%05d", tempInode.blockPointers[0]);
+			content += "\n"+String.format("%05d", tempInode.blockPointers[1])+"\n"+String.format("%05d", tempInode.blockPointers[2])+"\n"+String.format("%05d", tempInode.blockPointers[3])+"\n"+String.format("%05d", tempInode.blockPointers[4]);
 			fileSize += content.length();
 			FileWriter fw;
 			try {
@@ -83,18 +82,11 @@ public class Inode {
 				}
 				else
 					bw.write("\n"+content);
-				tempInode = new Inode();
-				content = String.format("%03d", tempInode.inodeNumber)+"\n"+tempInode.signature+"\n"+String.format("%02d", tempInode.blockCount)+"\n"+tempInode.fileType+"\n"+String.format("%03d", tempInode.grpId)+"\n"+String.format("%02d", tempInode.hardLinkCount);
-				content += "\n"+String.format("%02d", tempInode.refCount)+"\n"+String.format("%03d", tempInode.userId)+"\n";
-				content += tempInode.accessedTime.toString().substring(0, 19)+"\n"+tempInode.createdTime.toString().substring(0, 19)+"\n"+tempInode.modifyTime.toString().substring(0, 19)+"\n"+tempInode.permission[0]+tempInode.permission[1]+tempInode.permission[2]+"\n"+String.format("%05d", tempInode.blockPointers[0]);
-				content += "\n"+String.format("%05d", tempInode.blockPointers[1])+"\n"+String.format("%05d", tempInode.blockPointers[2])+"\n"+String.format("%05d", tempInode.blockPointers[3])+"\n"+String.format("%05d", tempInode.blockPointers[4]);
 				bw.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		Inode.inodeSize = content.length();
-		System.out.println(content.length());
 	}
 	public void writeToDisk() {
 		Block inodeB = this.getBlock();
