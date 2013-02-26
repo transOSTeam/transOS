@@ -1,56 +1,64 @@
 package frontend;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-
-import javax.swing.JDesktopPane;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 
-public class GuiStarter{
-	JFrame frame = new JFrame("Transparent OS");
-	JDesktopPane desktop = new JDesktopPane();
-	JMenuBar menuBar = new JMenuBar();
-	JMenu file = new JMenu("File");
-	JMenu edit = new JMenu("Edit");
-	JMenuItem newFile = new JMenuItem("New");
-	JMenuItem exit = new JMenuItem("Exit");
+public class GuiStarter {
+	JFrame mainFrame = new JFrame("Transparent OS");
+	JPanel mainPanel = new JPanel();
+	JPanel contentPanelWest = new JPanel();
+	JMenuBar mainMenuBar = new JMenuBar();
+	JMenu mainFileMenu = new JMenu("File");
+	JMenu newFileOrFolder = new JMenu("New");
+	JMenuItem newFile = new JMenuItem("File");
+	JMenuItem newFolder = new JMenuItem("Folder");
+	JLabel[] lblArray = new JLabel[100]; 
+	static int count = 0;
 	
-	public GuiStarter(){
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		frame.setVisible(true);
-		frame.add(desktop);
-		addMenuBar();
+	public GuiStarter() {
+		mainFrame.setExtendedState(Frame.MAXIMIZED_BOTH);
+		mainFrame.setVisible(true);
+		mainFrame.add(mainPanel);
+		mainPanel.setLayout(new BorderLayout());
+		mainPanel.add(mainMenuBar, BorderLayout.NORTH);
+		mainPanel.add(contentPanelWest,BorderLayout.WEST);
 		addMenuItems();
 	}
 	
-	private void addMenuBar(){
-		frame.setJMenuBar(menuBar);
-		
-		menuBar.add(file);
-		menuBar.add(edit);		
-	}
-	
 	private void addMenuItems(){
-		file.add(newFile);
-		file.add(exit);
-		
-		//action listeners for menu items
-		exit.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
-			}
-		});
+		mainMenuBar.add(mainFileMenu);
+		mainFileMenu.add(newFileOrFolder);
+		newFileOrFolder.add(newFile);
+		newFileOrFolder.add(newFolder);
 		
 		newFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//call text editor here
-				desktop.add(new TextEditor());
+				mainPanel.add(new TextEditor(mainFrame));
 			}
 		});
+		
+		newFolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				CreateFolder(count++);
+			}
+		});
+	}
+	
+	private void CreateFolder(int count){
+		ImageIcon icon = new ImageIcon("folder.gif");
+		lblArray[count] = new JLabel(icon);
+		lblArray[count].setText("new folder" + count);
+		contentPanelWest.add(lblArray[count]);
+		contentPanelWest.revalidate();
 	}
 }
