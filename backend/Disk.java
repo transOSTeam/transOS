@@ -51,7 +51,7 @@ public class Disk {
 			int i = 0;
 			for(int k = 0; k < 4; k++) {
 				for(int j = i % Disk.maxBlockSize; j < Disk.maxBlockSize; j++, i++) {
-					if(i < Disk.inodeEndBlock)				//all blocks up to last Inode block are considered to be system used and not available for user date
+					if(i < Disk.inodeEndBlock)				//all blocks up to last Inode block are considered to be system used and not available for user data
 						freeSpaceBitmapContent[k][j] = 49;	//in ASCII 49 is 1
 					else
 						freeSpaceBitmapContent[k][j] = 48;
@@ -72,6 +72,8 @@ public class Disk {
 
 	private static void createRootDir() {
 		Inode rootDirInode = new Inode(0,0,0,7,4,4,'d');
+		String content = "folder1\t001\nfolder2\t002";
+		rootDirInode.writeContent(content);
 		rootDirInode.writeToDisk();
 	}
 
@@ -141,7 +143,7 @@ public class Disk {
 			e.printStackTrace();
 		}
 		try {
-			final String fsBitmapAddress = "5678";
+			final String fsBitmapAddress = "5678";			//thats 5,6,7 and 8
 			Block superBlock = new Block(Disk.transDisk + "/" +String.format("%05d", Disk.superBlockAddress),"rw");
 			String content = Disk.noOfBlocks + "\n" + fsBitmapAddress;
 			superBlock.write(content.getBytes());

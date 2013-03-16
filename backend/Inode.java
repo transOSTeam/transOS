@@ -38,9 +38,9 @@ public class Inode {
 		blockCount = 0;
 		permission = new int[]{7,7,7};
 		fileType = 'r';
-		blockPointers = new int[] {0,0,0,0,0};
+		blockPointers = new int[] {0,0,0,0,0};		//5th block pointer is second level indirect pointer. Hard code
 	}
-	Inode(int inodeNum, int userId, int grpId, int pU, int pG, int pW, char fileType){
+	Inode(int inodeNum, int userId, int grpId, int pU, int pG, int pW, char fileType){		//pU, pG, pW: permission User, Group, World
 		permission = new int[3];
 		blockPointers = new int[5];
 		
@@ -58,7 +58,6 @@ public class Inode {
 		java.util.Date date= new java.util.Date();
 		this.createdTime = this.modifyTime = this.accessedTime = new Timestamp(date.getTime());
 		blockPointers = new int[5];
-		blockPointers[0] = FreeSpaceMgnt.getBlock();
 	}
 	
 	public static void resetInodeBlock(File f) {
@@ -122,5 +121,44 @@ public class Inode {
 			e.printStackTrace();
 		}
 		return retBlock;
+	}
+	public void writeContent(String content) {
+		int freePointer = 0;
+		while(this.blockPointers[freePointer] != 0 && freePointer < 4)		//only 4 are direct pointers
+			freePointer++;
+		
+		int noOfBlocksReq = content.length()/Disk.maxBlockSize;
+		int start = 0, end = Math.min(content.length(), Disk.maxBlockSize);
+		Block tempBlock = null;
+		for(int i = 0; i < noOfBlocksReq; i++) {
+			tempBlock = FreeSpaceMgnt.getBlock();
+			try {
+				tempBlock.writeBytes(content.substring(start, end));
+				start = end;
+				end += Disk.maxBlockSize;
+				if(end > content.length())
+					end = content.length();
+				if(freePointer < 4)
+					blockPointers[freePointer] = tempBlock.getBlockNumber();
+				else {
+					if(blockPointers[4] != 0) {		//there is indirect pointer block alloted
+						Block indirectPointerBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blockPointers[4]), "rw");
+						indirectPointerBlk.writeBytes(String.format("%05d", tempBlock.getBlockNumber()));		//need to append
+					}
+					else {
+						//make a indirect pointer block and add to this block
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		/*
+		else {
+			this.blockPointers[i] = tempBlock.getBlockNumber();
+			this.writeToDisk();			//unless dirty bit for every field is implemented we need to write whole Inode to disk.
+		}*/
+			
 	}
 }

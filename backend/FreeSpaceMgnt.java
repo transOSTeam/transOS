@@ -9,7 +9,7 @@ public class FreeSpaceMgnt {
 	private static byte[] freeBlockBitmap = new byte[Disk.noOfBlocks];
 	private static byte dirtyBuffer = 0;
 	
-	public static int getBlock() {
+	public static Block getBlock() {
 		int freeBlockAddress = 0;
 		for(int i = 0; i < Disk.noOfBlocks; i++)
 			if(freeBlockBitmap[i] > 0) {
@@ -17,8 +17,13 @@ public class FreeSpaceMgnt {
 				freeBlockBitmap[i] = 0;
 				dirtyBuffer = 1;
 			}
-				
-		return freeBlockAddress;
+		Block retBlock = null;
+		try {
+			retBlock = new Block(Disk.transDisk + "/" +String.format("%05d", freeBlockAddress), "rw");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}		
+		return retBlock;
 	}
 	public static void initBitmap(int[] freeBlockBitmapNo) {
 		try {
@@ -34,8 +39,6 @@ public class FreeSpaceMgnt {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		/*for(int i = 0; i < Disk.inodeEndBlock; i++)
-			System.out.println(FreeSpaceMgnt.freeBlockBitmap[i]);*/
 	}
 	
 	public static boolean isBufferDirty() {
