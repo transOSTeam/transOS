@@ -2,17 +2,13 @@ package frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -21,9 +17,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-
-import sun.org.mozilla.javascript.internal.ast.KeywordLiteral;
 
 public class GuiStarter {
 	JFrame mainFrame = new JFrame("Transparent OS");
@@ -34,49 +27,10 @@ public class GuiStarter {
 	JMenu newFileOrFolder = new JMenu("New");
 	JMenuItem newFile = new JMenuItem("File");
 	JMenuItem newFolder = new JMenuItem("Folder");
-	JPopupMenu popupMenu = new JPopupMenu("test");
+	JPopupMenu popupMenu = new JPopupMenu();
+	JPopupMenu rightClickMenu = new JPopupMenu();
 	JLabel[] lblArray = new JLabel[100]; 
 	static int count = 0;
-	
-	class PopupTriggerListener extends MouseAdapter{
-		public void mousePressed(MouseEvent e){
-			if(e.isPopupTrigger()){
-				popupMenu.show(e.getComponent(), e.getX(), e.getY());
-			}
-		}
-		public void mouseReleased(MouseEvent e){
-			if(e.isPopupTrigger()){
-				popupMenu.show(e.getComponent(), e.getX(), e.getY());
-			}
-		}
-	}
-	
-	class FolderNameEditListener extends MouseAdapter implements KeyListener{
-		public void mouseClicked(MouseEvent e){
-			e.getComponent().setEnabled(true);
-			e.getComponent().setBackground(mainPanel.getBackground());
-			e.getComponent().setForeground(Color.BLACK);
-		}
-	
-		@Override
-		public void keyPressed(KeyEvent e) {
-			if(e.getKeyCode() == KeyEvent.VK_ENTER){
-				e.getComponent().setEnabled(false);
-				e.getComponent().setBackground(mainPanel.getBackground());
-				e.getComponent().setForeground(Color.BLACK);
-			}
-		}
-		@Override
-		public void keyReleased(KeyEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-		@Override
-		public void keyTyped(KeyEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-	}
 	
 	public GuiStarter() {		
 		mainFrame.setExtendedState(Frame.MAXIMIZED_BOTH);
@@ -85,9 +39,10 @@ public class GuiStarter {
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(mainMenuBar, BorderLayout.NORTH);
 		mainPanel.add(contentPanelWest,BorderLayout.WEST);
-		mainPanel.addMouseListener(new PopupTriggerListener());
+		mainPanel.addMouseListener(new PopupTriggerListener(popupMenu));
 		addMenuItems();
 		addPopupMenuItems();
+		addRightClickMenuitems();
 	}
 	
 	private void addMenuItems(){
@@ -113,7 +68,8 @@ public class GuiStarter {
 		JMenuItem item1 = new JMenuItem("New File");
 		item1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				mainPanel.add(new TextEditor(mainFrame));
+				TextEditor txtEdit = new TextEditor(mainFrame);
+				mainPanel.add(txtEdit);
 			}
 		});
 		popupMenu.add(item1);
@@ -126,16 +82,67 @@ public class GuiStarter {
 		popupMenu.add(item2);
 	}
 	
+	private void addRightClickMenuitems(){
+		JMenuItem item1 = new JMenuItem("Delete");
+		item1.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				e.getComponent().setVisible(false);
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		rightClickMenu.add(item1);
+		
+		JMenuItem item2 = new JMenuItem("Rename");
+		item2.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {
+				e.getComponent().setVisible(false);
+			}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {}
+		});
+	}
+	
 	private void createFolder(int count){
+		//call a backend createfolder procedure here which returns a unique id for each folder
+		
 		ImageIcon icon = new ImageIcon("folder.gif");
 		JLabel lbl = new JLabel(icon);
 		JTextField txt = new JTextField("new folder" + count);
+		
 		txt.setEnabled(false);
 		txt.setBackground(mainPanel.getBackground());
 		txt.setDisabledTextColor(Color.BLACK);
-		FolderNameEditListener listener = new FolderNameEditListener();
+		txt.setName("unique id");
+		FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
 		txt.addMouseListener(listener);
 		txt.addKeyListener(listener);
+		
+		lbl.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2){
+					FolderListing fldrpane = new FolderListing(mainFrame);
+					mainPanel.add(fldrpane);
+				}
+			}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		});
 		//lbl.setText("\n"+"new folder" + count);
 		contentPanelWest.add(lbl);
 		contentPanelWest.add(txt);

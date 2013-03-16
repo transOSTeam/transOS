@@ -1,14 +1,14 @@
 package frontend;
 
-import java.awt.Component;
-
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JTextArea;
 
-public class TextEditor extends Component{
+public class TextEditor extends JComponent{
+	private static final long serialVersionUID = 1L;
 	JDialog dialog ;
 	JTextArea txtArea = new JTextArea();
 	JMenuBar menuBar = new JMenuBar();
