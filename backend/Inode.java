@@ -40,6 +40,37 @@ public class Inode {
 		fileType = 'r';
 		blockPointers = new int[] {0,0,0,0,0};		//5th block pointer is second level indirect pointer. Hard code
 	}
+	Inode(int inodeNum){							//constructor to bring existing Inode into memory (read)
+		int inodeBlockAdd = this.getInodeAddress(inodeNum);
+		try {
+			Block inodeBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", inodeBlockAdd), "r");
+			inodeBlock.seek(inodeNum%4*inodeSize);
+			int intBuffer = inodeBlock.read();			//this can cause trouble!!! how many bytes read?
+			if(intBuffer == inodeNum) {
+				this.inodeNumber = inodeNum;
+				this.signature = inodeBlock.read();
+				this.blockCount = inodeBlock.read();
+				this.fileType = inodeBlock.readChar();
+				this.grpId = inodeBlock.read();
+				this.hardLinkCount = inodeBlock.read();
+				this.refCount = inodeBlock.read();
+				this.userId = inodeBlock.read();
+				this.accessedTime = Timestamp.valueOf(inodeBlock.readLine());
+				this.createdTime = Timestamp.valueOf(inodeBlock.readLine());
+				this.modifyTime = Timestamp.valueOf(inodeBlock.readLine());
+				for(int i = 0; i < 3; i++)
+					this.permission[i] = inodeBlock.readByte();
+				for(int i = 0; i < 5; i++)
+					this.blockPointers[i] = inodeBlock.read();
+			}
+			else {
+				System.out.println("Wrong inode read, Inode = "+inodeNum);
+			}
+			inodeBlock.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	Inode(int inodeNum, int userId, int grpId, int pU, int pG, int pW, char fileType){		//pU, pG, pW: permission User, Group, World
 		permission = new int[3];
 		blockPointers = new int[5];
@@ -60,6 +91,11 @@ public class Inode {
 		blockPointers = new int[5];
 	}
 	
+	private int getInodeAddress(int inodeNumber) {
+		int address = 0;
+		address = Disk.inodeStartBlock + (int)inodeNumber/4;
+		return address;
+	}
 	public static void resetInodeBlock(File f) {
 		long fileSize = f.length();
 		boolean firstWrite = false;
@@ -138,15 +174,27 @@ public class Inode {
 				end += Disk.maxBlockSize;
 				if(end > content.length())
 					end = content.length();
-				if(freePointer < 4)
+				if(freePointer < 4) {
 					blockPointers[freePointer] = tempBlock.getBlockNumber();
-				else {
+					freePointer++;
+					this.blockCount++;
+				}
+				else {								//use indirect block pointer
 					if(blockPointers[4] != 0) {		//there is indirect pointer block alloted
 						Block indirectPointerBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blockPointers[4]), "rw");
-						indirectPointerBlk.writeBytes(String.format("%05d", tempBlock.getBlockNumber()));		//need to append
+						if(indirectPointerBlk.length() < 500) {
+							indirectPointerBlk.seek(indirectPointerBlk.length());
+							indirectPointerBlk.writeBytes(String.format("%05d", tempBlock.getBlockNumber()));		//need to append
+						}
+						else {
+							System.out.println("File Overflow");		//highly unlikely event: if u get time, do something here
+						}
+						indirectPointerBlk.close();
 					}
-					else {
-						//make a indirect pointer block and add to this block
+					else {							//create indirect pointer block and then add
+						Block indirectPointerBlk = FreeSpaceMgnt.getBlock();
+						indirectPointerBlk.writeBytes(String.format("%05d", tempBlock.getBlockNumber()));		//need to append
+						indirectPointerBlk.close();
 					}
 				}
 			} catch (IOException e) {
