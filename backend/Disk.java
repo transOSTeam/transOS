@@ -19,8 +19,8 @@ public class Disk {
 	public static final int inodeStartBlock = 10;
 	public static final int inodeEndBlock = 100;
 	
-	private static final int partitionTableAddress = 0;
-	private static final int superBlockAddress = 2;
+	public static final int partitionTableAddress = 0;
+	public static final int superBlockAddress = 2;
 	
 	public static int tempFileCounter = 0;
 	
@@ -35,6 +35,7 @@ public class Disk {
 	
 	private static void initializeFreeSpaceMgnt() {
 		try {
+			//initialize free block bitmap
 			int noOfBlocksBitmap = 4; 					// hard code: 2000sized bitmap will require 4 blocks of 500
 			Block superBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
 			superBlock.readLine();
@@ -42,7 +43,6 @@ public class Disk {
 			String tempStr = superBlock.readLine();
 			for(int i = 0; i < noOfBlocksBitmap; i++)
 				freeBlockBitmapNo[i] = Integer.parseInt(tempStr.substring(i, i+1));
-			superBlock.close();
 			
 			byte[][] freeSpaceBitmapContent = new byte[4][];
 			for(int i = 0; i < 4; i++)
@@ -63,6 +63,17 @@ public class Disk {
 				bitmapBlock.write(freeSpaceBitmapContent[i]);
 				bitmapBlock.close();
 			}
+			
+			//initialize free inodes bitmap
+			int freeInodeBitmapNo = superBlock.read();
+			byte freeInodeContent[] = new byte[(Disk.inodeEndBlock- Disk.inodeStartBlock + 1)*4];
+			for(i = 0; i < (Disk.inodeEndBlock - Disk.inodeStartBlock + 1)*4; i++) {
+				freeInodeContent[i] = 48;
+			}
+			Block freeInodeBitmapBlk = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo), "rw");
+			freeInodeBitmapBlk.write(freeInodeContent);
+			freeInodeBitmapBlk.close();
+			superBlock.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -143,7 +154,7 @@ public class Disk {
 			e.printStackTrace();
 		}
 		try {
-			final String fsBitmapAddress = "5678";			//thats 5,6,7 and 8
+			final String fsBitmapAddress = "5678\n9";			//thats 5,6,7 and 8 and 9 has free Inode bitmap
 			Block superBlock = new Block(Disk.transDisk + "/" +String.format("%05d", Disk.superBlockAddress),"rw");
 			String content = Disk.noOfBlocks + "\n" + fsBitmapAddress;
 			superBlock.write(content.getBytes());
@@ -178,5 +189,30 @@ public class Disk {
 			e.printStackTrace();
 		}
 		FreeSpaceMgnt.initBitmap(freeBlockBitmapNo);		//part of boot-up
+	}
+	
+	public static void shutDown() {
+		FreeSpaceMgnt.shutDown();
+	}
+	
+	public static Inode makeFile() {
+		Inode newFile = null;
+		//get free inode number from freespacemgnt
+		//create inode using this number
+		//return this inode
+		return newFile;
+	}
+	
+	public static void deleteFile(Inode victim) {
+		//mark all the blocks in victim as free
+		//mark its inode as free
+	}
+	
+	public static Inode makeDir() {
+		Inode newDir = null;
+		//get free inode number from freeSpaceMngt
+		//create Dir from Inode
+		//mark as dir and return
+		return newDir;
 	}
 }

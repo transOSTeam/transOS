@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 
 public class Inode {
-	private static int inodeNumberCounter = 0; 
+	private static int inodeNumberCounter = 0;
 	
 	private int signature;					// 1 |0 inactive, 1 Inode, 2 single indirect data block, 3 double indirect and so on...
 	private int inodeNumber;				// 3
