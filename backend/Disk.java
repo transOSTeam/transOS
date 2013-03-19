@@ -65,7 +65,9 @@ public class Disk {
 			}
 			
 			//initialize free inodes bitmap
-			int freeInodeBitmapNo = superBlock.read();
+			System.out.println(superBlock.getFilePointer());
+			int freeInodeBitmapNo = superBlock.read() - 48;
+			System.out.println(superBlock.getFilePointer());
 			byte freeInodeContent[] = new byte[(Disk.inodeEndBlock- Disk.inodeStartBlock + 1)*4];
 			for(i = 0; i < (Disk.inodeEndBlock - Disk.inodeStartBlock + 1)*4; i++) {
 				freeInodeContent[i] = 48;
@@ -193,26 +195,5 @@ public class Disk {
 	
 	public static void shutDown() {
 		FreeSpaceMgnt.shutDown();
-	}
-	
-	public static Inode makeFile() {
-		Inode newFile = null;
-		//get free inode number from freespacemgnt
-		//create inode using this number
-		//return this inode
-		return newFile;
-	}
-	
-	public static void deleteFile(Inode victim) {
-		//mark all the blocks in victim as free
-		//mark its inode as free
-	}
-	
-	public static Inode makeDir() {
-		Inode newDir = null;
-		//get free inode number from freeSpaceMngt
-		//create Dir from Inode
-		//mark as dir and return
-		return newDir;
 	}
 }

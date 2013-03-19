@@ -11,7 +11,7 @@ public class kickStart {
 		kickStart.chkDisk();
 		//Disk.bootUp();
 		//start GUI
-		//new GuiStarter();
+		new GuiStarter();
 	}
 
 	private static void chkDisk(){

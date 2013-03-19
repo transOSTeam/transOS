@@ -45,7 +45,7 @@ public class Inode {
 		try {
 			Block inodeBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", inodeBlockAdd), "r");
 			inodeBlock.seek(inodeNum%4*inodeSize);
-			int intBuffer = inodeBlock.read();			//this can cause trouble!!! how many bytes read?
+			int intBuffer = inodeBlock.read();			//this can cause trouble!!! how many bytes read? maybe need to do -48
 			if(intBuffer == inodeNum) {
 				this.inodeNumber = inodeNum;
 				this.signature = inodeBlock.read();
@@ -102,7 +102,7 @@ public class Inode {
 		
 		while(fileSize <= Disk.maxBlockSize - Inode.inodeSize) {
 			Inode tempInode = new Inode();
-			String content = String.format("%03d", tempInode.inodeNumber)+"\n"+tempInode.signature+"\n"+String.format("%02d", tempInode.blockCount)+"\n"+tempInode.fileType+"\n"+String.format("%03d", tempInode.grpId)+"\n"+String.format("%02d", tempInode.hardLinkCount);
+			String content = String.format("%03d", tempInode.inodeNumber)+"\n"+tempInode.signature+"\n"+String.format("%02d", tempInode.getBlockCount())+"\n"+tempInode.fileType+"\n"+String.format("%03d", tempInode.grpId)+"\n"+String.format("%02d", tempInode.hardLinkCount);
 			content += "\n"+String.format("%02d", tempInode.refCount)+"\n"+String.format("%03d", tempInode.userId)+"\n";
 			content += tempInode.accessedTime.toString().substring(0, 19)+"\n"+tempInode.createdTime.toString().substring(0, 19)+"\n"+tempInode.modifyTime.toString().substring(0, 19)+"\n"+tempInode.permission[0]+tempInode.permission[1]+tempInode.permission[2]+"\n"+String.format("%05d", tempInode.blockPointers[0]);
 			content += "\n"+String.format("%05d", tempInode.blockPointers[1])+"\n"+String.format("%05d", tempInode.blockPointers[2])+"\n"+String.format("%05d", tempInode.blockPointers[3])+"\n"+String.format("%05d", tempInode.blockPointers[4]);
@@ -123,18 +123,18 @@ public class Inode {
 			}
 		}
 	}
-	public void writeToDisk() {
+	public void writeToDisk() {							//this might blow up!!!
 		Block inodeB = this.getBlock();
 		String content;
 		try {
 			long seekSize = Inode.inodeSize + 1;
 			while(String.format("%03d", this.inodeNumber).compareTo(inodeB.readLine()) != 0) {
 				inodeB.seek(seekSize);
-				seekSize += seekSize;
+				seekSize += Inode.inodeSize;
 			}
-			seekSize -= seekSize;
+			seekSize -= Inode.inodeSize;
 			inodeB.seek(seekSize);
-			content = String.format("%03d", this.inodeNumber)+"\n"+this.signature+"\n"+String.format("%02d", this.blockCount)+"\n"+this.fileType+"\n"+String.format("%03d", this.grpId)+"\n"+String.format("%02d", this.hardLinkCount);
+			content = String.format("%03d", this.inodeNumber)+"\n"+this.signature+"\n"+String.format("%02d", this.getBlockCount())+"\n"+this.fileType+"\n"+String.format("%03d", this.grpId)+"\n"+String.format("%02d", this.hardLinkCount);
 			content += "\n"+String.format("%02d", this.refCount)+"\n"+String.format("%03d", this.userId)+"\n";
 			content += this.accessedTime.toString().substring(0, 19)+"\n"+this.createdTime.toString().substring(0, 19)+"\n"+this.modifyTime.toString().substring(0, 19)+"\n"+this.permission[0]+this.permission[1]+this.permission[2]+"\n"+String.format("%05d", this.blockPointers[0]);
 			content += "\n"+String.format("%05d", this.blockPointers[1])+"\n"+String.format("%05d", this.blockPointers[2])+"\n"+String.format("%05d", this.blockPointers[3])+"\n"+String.format("%05d", this.blockPointers[4]);
@@ -158,7 +158,7 @@ public class Inode {
 		}
 		return retBlock;
 	}
-	public void writeContent(String content) {
+	public void writeContent(String content) {				//this will blow up! if it did not...try betting on horses
 		int freePointer = 0;
 		while(this.blockPointers[freePointer] != 0 && freePointer < 4)		//only 4 are direct pointers
 			freePointer++;
@@ -208,5 +208,12 @@ public class Inode {
 			this.writeToDisk();			//unless dirty bit for every field is implemented we need to write whole Inode to disk.
 		}*/
 			
+	}
+	public int getBlockCount() {
+		return blockCount;
+	}
+	
+	public int[] getBlockPointers() {
+		return this.blockPointers;
 	}
 }

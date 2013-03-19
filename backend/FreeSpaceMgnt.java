@@ -13,10 +13,11 @@ public class FreeSpaceMgnt {
 	public static Block getBlock() {
 		int freeBlockAddress = 0;
 		for(int i = 0; i < Disk.noOfBlocks; i++)
-			if(freeBlockBitmap[i] > 0) {
+			if(freeBlockBitmap[i] == 0) {
 				freeBlockAddress = i;
-				freeBlockBitmap[i] = 0;
+				freeBlockBitmap[i] = 1;
 				dirtyBuffer[1] = 1;
+				break;
 			}
 		Block retBlock = null;
 		try {
@@ -26,19 +27,27 @@ public class FreeSpaceMgnt {
 		}		
 		return retBlock;
 	}
-	public static boolean consumeBlock(Block victim) {
-		boolean retCode = false;
-		freeBlockBitmap[victim.getBlockNumber()] = 0;
-		dirtyBuffer[1] = 1;
-		return retCode;
+	public static int getInode() {
+		int inodeNum = 0;
+		for(int i = 0; i < (Disk.inodeEndBlock - Disk.inodeStartBlock + 1)*4; i++) {
+			if(freeInodeBitmap[i] == 0) {
+				inodeNum = i;
+				freeInodeBitmap[i] = 1;
+				dirtyBuffer[0] = 1;
+				break;
+			}
+		}
+		return inodeNum;
 	}
-	public static boolean consumeBlock(Block[] victims) {
-		boolean retCode = false;
-		for(Block tempBlock: victims) {
-			freeBlockBitmap[tempBlock.getBlockNumber()] = 0;
+	public static void consumeBlock(int victim) {
+		freeBlockBitmap[victim] = 0;
+		dirtyBuffer[1] = 1;
+	}
+	public static void consumeBlock(int[] victims) {
+		for(int tempVictim: victims) {
+			freeBlockBitmap[tempVictim] = 0;
 		}
 		dirtyBuffer[1] = 1;
-		return retCode;
 	}
 	public static void initBitmap(int[] freeBlockBitmapNo) {
 		try {
@@ -105,5 +114,9 @@ public class FreeSpaceMgnt {
 				e.printStackTrace();
 			}
 		}
+	}
+	public static void consumeInode(int victimInodeNo) {
+		FreeSpaceMgnt.freeInodeBitmap[victimInodeNo] = 0;
+		dirtyBuffer[0] = 1;
 	}
 }
