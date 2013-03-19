@@ -31,7 +31,7 @@ class FolderNameEditListener extends MouseAdapter implements KeyListener{
 			
 			txt = (JTextField)e.getSource();
 			//call rename method here
-			System.out.println(txt.getText());
+			System.out.println(txt.getText() + txt.getName());
 		}
 	}
 	@Override

@@ -5,10 +5,18 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -43,6 +51,7 @@ public class GuiStarter {
 		addMenuItems();
 		addPopupMenuItems();
 		addRightClickMenuitems();
+		showExistingFolderAndFiles();
 	}
 	
 	private void addMenuItems(){
@@ -82,6 +91,7 @@ public class GuiStarter {
 		popupMenu.add(item2);
 	}
 	
+	//to do later
 	private void addRightClickMenuitems(){
 		JMenuItem item1 = new JMenuItem("Delete");
 		item1.addMouseListener(new MouseListener() {
@@ -108,17 +118,89 @@ public class GuiStarter {
 		});
 	}
 	
+	private void showExistingFolderAndFiles() {
+		//get existing folder list from parentpath and id
+		String[] existingFolderAndFileNames ={"test"};
+		//ImageIcon icon;
+		//JLabel lbl;
+		JTextField txt;
+		BufferedImage img = null;
+		JButton lbl;
+		for(int i = 0;i < existingFolderAndFileNames.length;i++){
+			try {
+				img = ImageIO.read(new File("folder.gif"));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			lbl = new JButton(new ImageIcon(img));
+			lbl.setBorder(BorderFactory.createEmptyBorder());
+			lbl.setContentAreaFilled(false);
+			//icon = new ImageIcon("folder.gif");
+			//lbl = new JLabel(icon);
+			txt = new JTextField(existingFolderAndFileNames[i]);
+			 
+			txt.setEnabled(false);
+			txt.setBackground(mainPanel.getBackground());
+			txt.setDisabledTextColor(Color.BLACK);
+			txt.setName("path|inode number");
+			FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
+			txt.addMouseListener(listener);
+			txt.addKeyListener(listener);
+			
+			lbl.addMouseListener(new MouseListener() {
+				public void mouseClicked(MouseEvent e) {
+					if(e.getClickCount() == 2){
+						FolderListing fldrpane = new FolderListing(mainFrame,"",10);
+						mainPanel.add(fldrpane);
+					}
+				}
+				public void mouseEntered(MouseEvent e) {}
+				public void mouseExited(MouseEvent e) {}
+				public void mousePressed(MouseEvent e) {
+					if(e.isPopupTrigger()){
+						rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+					}
+				}
+				public void mouseReleased(MouseEvent e) {
+					if(e.isPopupTrigger()){
+						rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+					}
+				}
+			});
+			lbl.addFocusListener(new FocusListener() {
+				public void focusLost(FocusEvent e) {
+				}
+				public void focusGained(FocusEvent e) {
+				}
+			});
+			
+			contentPanelWest.add(lbl);
+			contentPanelWest.add(txt);
+			contentPanelWest.revalidate();
+		}
+	}
+	
 	private void createFolder(int count){
 		//call a backend createfolder procedure here which returns a unique id for each folder
 		
-		ImageIcon icon = new ImageIcon("folder.gif");
-		JLabel lbl = new JLabel(icon);
+		BufferedImage img = null;
+		JButton lbl;
 		JTextField txt = new JTextField("new folder" + count);
+		try {
+			img = ImageIO.read(new File("folder.gif"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		lbl = new JButton(new ImageIcon(img));
+		lbl.setBorder(BorderFactory.createEmptyBorder());
+		lbl.setContentAreaFilled(false);
 		
 		txt.setEnabled(false);
 		txt.setBackground(mainPanel.getBackground());
 		txt.setDisabledTextColor(Color.BLACK);
-		txt.setName("unique id");
+		txt.setName("path|inode number");
 		FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
 		txt.addMouseListener(listener);
 		txt.addKeyListener(listener);
@@ -126,7 +208,7 @@ public class GuiStarter {
 		lbl.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2){
-					FolderListing fldrpane = new FolderListing(mainFrame);
+					FolderListing fldrpane = new FolderListing(mainFrame,"",10);
 					mainPanel.add(fldrpane);
 				}
 			}
@@ -141,6 +223,13 @@ public class GuiStarter {
 				if(e.isPopupTrigger()){
 					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
+			}
+		});
+		
+		lbl.addFocusListener(new FocusListener() {
+			public void focusLost(FocusEvent e) {
+			}
+			public void focusGained(FocusEvent e) {
 			}
 		});
 		//lbl.setText("\n"+"new folder" + count);
