@@ -6,12 +6,27 @@ import java.util.HashMap;
 
 
 public class Directory {
+	private class DirEntry{
+		private String name;
+		private char type;
+		
+		DirEntry(String tName, char tType){
+			this.name = tName;
+			this.type = tType;
+		}
+		public String getName() {
+			return this.name;
+		}
+		public char getType() {
+			return this.type;
+		}
+	}
 	private int inodeNum;
-	private HashMap<Integer, String> dirContent;  
+	private HashMap<Integer, DirEntry> dirContent;  
 	
 	Directory(int inodeNum){
 		this.inodeNum = inodeNum;
-		dirContent = new HashMap<Integer, String>();
+		dirContent = new HashMap<Integer, DirEntry>();
 		Inode dirInode = new Inode(inodeNum);
 		int[] blkPointers = dirInode.getBlockPointers();
 		for(int i = 0; i < dirInode.getBlockCount(); i++) {
@@ -20,7 +35,8 @@ public class Directory {
 				for(String tempBuffer = tempBlk.readLine(); tempBuffer != null; ) {
 					int tempInode = Integer.parseInt(tempBuffer.substring(0, 3));
 					String tempName = tempBuffer.substring(4);
-					this.dirContent.put(tempInode, tempName);
+					DirEntry tempDirEntry = new DirEntry(tempName, 'd');
+					this.dirContent.put(tempInode, tempDirEntry);
 				}
 				tempBlk.close();
 			} catch (FileNotFoundException e) {
@@ -36,7 +52,8 @@ public class Directory {
 		Inode newFileInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'r');
 		newFileInode.writeContent(fileContent);
 		newFileInode.writeToDisk();
-		this.dirContent.put(inodeNum, fileName);
+		DirEntry tempDirEntry = new DirEntry(fileName, 'r');
+		this.dirContent.put(inodeNum, tempDirEntry);
 		Inode thisInode = new Inode(this.inodeNum);
 		//thisInode.writeToDisk(); this will write inode to disk..we need to write dir content to disk
 		//we'll need dirty bit for every block pointer
@@ -56,7 +73,8 @@ public class Directory {
 		int inodeNum = FreeSpaceMgnt.getInode();
 		Inode newDirInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'd');
 		newDirInode.writeToDisk();
-		this.dirContent.put(inodeNum, dirName);
+		DirEntry tempDirEntry = new DirEntry(dirName, 'd');
+		this.dirContent.put(inodeNum, tempDirEntry);
 		Inode thisInode = new Inode(this.inodeNum);
 		//thisInode.writeToDisk(); this will write inode to disk..we need to write dir content to disk
 		return newDirInode;

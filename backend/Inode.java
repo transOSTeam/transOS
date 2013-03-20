@@ -26,6 +26,8 @@ public class Inode {
 	//16 bytes for \n. So total inodeSize = 118
 	public static final int inodeSize = 118;
 	
+	private byte[] modifiedBlocks;			//dirty bits for modified file content
+	
 	Inode(){
 		signature = 0;
 		inodeNumber = inodeNumberCounter++;
@@ -39,6 +41,7 @@ public class Inode {
 		permission = new int[]{7,7,7};
 		fileType = 'r';
 		blockPointers = new int[] {0,0,0,0,0};		//5th block pointer is second level indirect pointer. Hard code
+		modifiedBlocks = new byte[] {0,0,0,0,0};
 	}
 	Inode(int inodeNum){							//constructor to bring existing Inode into memory (read)
 		int inodeBlockAdd = this.getInodeAddress(inodeNum);
@@ -62,6 +65,7 @@ public class Inode {
 					this.permission[i] = inodeBlock.readByte();
 				for(int i = 0; i < 5; i++)
 					this.blockPointers[i] = inodeBlock.read();
+				modifiedBlocks = new byte[] {0,0,0,0,0};
 			}
 			else {
 				System.out.println("Wrong inode read, Inode = "+inodeNum);
@@ -89,6 +93,7 @@ public class Inode {
 		java.util.Date date= new java.util.Date();
 		this.createdTime = this.modifyTime = this.accessedTime = new Timestamp(date.getTime());
 		blockPointers = new int[5];
+		modifiedBlocks = new byte[] {0,0,0,0,0};
 	}
 	
 	private int getInodeAddress(int inodeNumber) {
@@ -132,8 +137,8 @@ public class Inode {
 				inodeB.seek(seekSize);
 				seekSize += Inode.inodeSize;
 			}
-			seekSize -= Inode.inodeSize;
-			inodeB.seek(seekSize);
+			//seekSize -= Inode.inodeSize;
+			inodeB.seek(seekSize - 3);
 			content = String.format("%03d", this.inodeNumber)+"\n"+this.signature+"\n"+String.format("%02d", this.getBlockCount())+"\n"+this.fileType+"\n"+String.format("%03d", this.grpId)+"\n"+String.format("%02d", this.hardLinkCount);
 			content += "\n"+String.format("%02d", this.refCount)+"\n"+String.format("%03d", this.userId)+"\n";
 			content += this.accessedTime.toString().substring(0, 19)+"\n"+this.createdTime.toString().substring(0, 19)+"\n"+this.modifyTime.toString().substring(0, 19)+"\n"+this.permission[0]+this.permission[1]+this.permission[2]+"\n"+String.format("%05d", this.blockPointers[0]);
@@ -158,7 +163,7 @@ public class Inode {
 		}
 		return retBlock;
 	}
-	public void writeContent(String content) {				//this will blow up! if it did not...try betting on horses
+	public void writeContent(String content) {				//this will blow up!
 		int freePointer = 0;
 		while(this.blockPointers[freePointer] != 0 && freePointer < 4)		//only 4 are direct pointers
 			freePointer++;

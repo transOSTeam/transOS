@@ -17,8 +17,8 @@ public class kickStart {
 	private static void chkDisk(){
 		File disk = Disk.transDisk;
 
-		//if(!disk.exists()){
+		if(!disk.exists()){
 			Disk.createDisk();
-		//}
+		}
 	}
 }

@@ -44,6 +44,7 @@ public class GuiStarter {
 		mainFrame.setExtendedState(Frame.MAXIMIZED_BOTH);
 		mainFrame.setVisible(true);
 		mainFrame.add(mainPanel);
+		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(mainMenuBar, BorderLayout.NORTH);
 		mainPanel.add(contentPanelWest,BorderLayout.WEST);

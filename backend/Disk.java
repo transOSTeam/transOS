@@ -84,7 +84,7 @@ public class Disk {
 	}
 
 	private static void createRootDir() {
-		Inode rootDirInode = new Inode(0,0,0,7,4,4,'d');
+		Inode rootDirInode = new Inode(2,0,0,7,4,4,'d');
 		String content = "folder1\t001\nfolder2\t002";
 		rootDirInode.writeContent(content);
 		rootDirInode.writeToDisk();
