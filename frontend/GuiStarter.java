@@ -12,11 +12,16 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryIteratorException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -25,6 +30,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+
+import backend.DirEntry;
+import backend.Directory;
+import backend.Inode;
 
 public class GuiStarter {
 	JFrame mainFrame = new JFrame("Transparent OS");
@@ -38,10 +47,14 @@ public class GuiStarter {
 	JPopupMenu popupMenu = new JPopupMenu();
 	JPopupMenu rightClickMenu = new JPopupMenu();
 	JLabel[] lblArray = new JLabel[100]; 
-	static int count = 0;
+	
+	private HashMap<String, JComponent> componentMap = new HashMap<String, JComponent>();;
+	private int rootInoneNum = 2;// get root inode number
+	private Directory rootDir = new Directory(rootInoneNum);
+	private static int count = 0;
 	
 	public GuiStarter() {		
-		mainFrame.setExtendedState(Frame.MAXIMIZED_BOTH);
+		mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		mainFrame.setVisible(true);
 		mainFrame.add(mainPanel);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -121,38 +134,58 @@ public class GuiStarter {
 	
 	private void showExistingFolderAndFiles() {
 		//get existing folder list from parentpath and id
-		String[] existingFolderAndFileNames ={"test"};
-		//ImageIcon icon;
-		//JLabel lbl;
+		//HashMap<Integer, String> dirContent = rootDir.getDirContent();
+		HashMap<Integer, DirEntry> dirContent = rootDir.getDirContent();
+		//dirContent.put(10, new DirEntry("test",'d'));
+		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
+		
 		JTextField txt;
 		BufferedImage img = null;
 		JButton lbl;
-		for(int i = 0;i < existingFolderAndFileNames.length;i++){
-			try {
-				img = ImageIO.read(new File("folder.gif"));
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+		
+		while(it.hasNext()){
+			Map.Entry<Integer, DirEntry> entry = it.next();
+			
+			DirEntry tempDirEntry = entry.getValue();
+			if(tempDirEntry.getType() == 'd'){
+				try {
+					img = ImageIO.read(new File("folder.gif"));
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
+			else{
+				try {
+					img = ImageIO.read(new File("txt_file.gif"));
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
 			lbl = new JButton(new ImageIcon(img));
 			lbl.setBorder(BorderFactory.createEmptyBorder());
 			lbl.setContentAreaFilled(false);
-			//icon = new ImageIcon("folder.gif");
-			//lbl = new JLabel(icon);
-			txt = new JTextField(existingFolderAndFileNames[i]);
-			 
+			String lblName = "lbl,d," + entry.getKey().toString();
+			lbl.setName(lblName);
+			componentMap.put(lblName, lbl);
+			
+			txt = new JTextField(entry.getValue().getName());			
 			txt.setEnabled(false);
 			txt.setBackground(mainPanel.getBackground());
 			txt.setDisabledTextColor(Color.BLACK);
-			txt.setName("path|inode number");
+			String txtName = "txt,d," + entry.getKey().toString();
+			txt.setName(txtName); //test
 			FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
 			txt.addMouseListener(listener);
 			txt.addKeyListener(listener);
+			componentMap.put(txtName, txt);
 			
 			lbl.addMouseListener(new MouseListener() {
 				public void mouseClicked(MouseEvent e) {
 					if(e.getClickCount() == 2){
-						FolderListing fldrpane = new FolderListing(mainFrame,"",10);
+						String[] temp = e.getComponent().getName().split(",");
+						JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+						FolderListing fldrpane = new FolderListing(mainFrame,tempTxt.getText(),10);
 						mainPanel.add(fldrpane);
 					}
 				}
@@ -179,11 +212,14 @@ public class GuiStarter {
 			contentPanelWest.add(lbl);
 			contentPanelWest.add(txt);
 			contentPanelWest.revalidate();
+			
+			it.remove();
 		}
 	}
 	
 	private void createFolder(int count){
 		//call a backend createfolder procedure here which returns a unique id for each folder
+		Inode dirInode = rootDir.makeDir("");
 		
 		BufferedImage img = null;
 		JButton lbl;
@@ -237,6 +273,19 @@ public class GuiStarter {
 		contentPanelWest.add(lbl);
 		contentPanelWest.add(txt);
 		contentPanelWest.revalidate();
+	}
+	
+	private void createComponentMap(){
+		JComponent[] components = (JComponent[]) mainFrame.getContentPane().getComponents();
+		for(int i = 0;i < components.length;i++){
+			componentMap.put(components[i].getName(), components[i]);
+		}
+	}
+	private JComponent getComponentByName(String componentName){
+		if(componentMap.containsKey(componentName)){
+			return (JComponent) componentMap.get(componentName);
+		}
+		else return null;
 	}
 	
 }

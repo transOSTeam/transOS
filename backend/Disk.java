@@ -185,7 +185,7 @@ public class Disk {
 			for(int i = 0; i < 4; i++) {
 				freeBlockBitmapNo[i] = Integer.parseInt(bitmap.substring(i, i+1));
 			}
-		} catch (NumberFormatException | IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		FreeSpaceMgnt.initBitmap(freeBlockBitmapNo);		//part of boot-up

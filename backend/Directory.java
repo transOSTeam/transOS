@@ -7,30 +7,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.naming.directory.DirContext;
+
 //import backend.Directory.DirEntry;
 
 
 public class Directory {
-	private class DirEntry{
-		private String name;
-		private char type;
-		
-		DirEntry(String tName, char tType){
-			this.name = tName;
-			this.type = tType;
-		}
-		public String getName() {
-			return this.name;
-		}
-		public char getType() {
-			return this.type;
-		}
-	}
+	
 	private int inodeNum;
 	//private int parentInodeNum;
 	private HashMap<Integer, DirEntry> dirContent;  
 	
-	Directory(int inodeNum){
+	public Directory(int inodeNum){
 		this.inodeNum = inodeNum;
 		dirContent = new HashMap<Integer, DirEntry>();
 		Inode dirInode = new Inode(inodeNum);
@@ -102,5 +90,9 @@ public class Directory {
 		Inode thisInode = new Inode(this.inodeNum);
 		thisInode.writeContent(content);
 		thisInode.writeToDisk();
+	}
+	
+	public HashMap<Integer, DirEntry> getDirContent(){
+		return this.dirContent;
 	}
 }
