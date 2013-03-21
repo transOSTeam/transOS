@@ -13,7 +13,7 @@ Super Block Structure
 ____________________________________________________________________________________________________________________________
 Inode Structure
  1: Inode Number	000
- 2: Signature		1
+ 2: Signature		1	// 1 |0 inactive, 1 Inode, 2 single indirect data block, 3 double indirect and so on...
  3: Block Count		00
  4: File Type		d
  5: Group Id		000
