@@ -9,7 +9,11 @@ public class Block extends RandomAccessFile{
 	
 	public Block(String name, String mode) throws FileNotFoundException {
 		super(name, mode);
-		this.blockNumber = Integer.parseInt(name.substring(name.length()-3, name.length()));
+		this.blockNumber = Integer.parseInt(name.substring(name.length()-5, name.length()));
+	}
+	public Block(int blockNum, String mode) throws FileNotFoundException {
+		super(Disk.homeDir.toString() + "/TransDisk/" + String.format("05%d", blockNum), mode);
+		this.blockNumber = blockNum;
 	}
 	public int getBlockNumber(){
 		return this.blockNumber;

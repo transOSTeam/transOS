@@ -43,7 +43,27 @@ public class FreeSpaceMgnt {
 		freeBlockBitmap[victim] = 0;
 		dirtyBuffer[1] = 1;
 	}
-	public static void consumeBlocks(int[] victims) {
+	public static void consumeBlocks(int[] victims) {			//we consider 5th entry (index 4) is a indirect block pointer
+		for(int i = 0; i < 4; i++) {
+			if(victims[i] != 0) {
+				freeBlockBitmap[victims[i]] = 0;
+			}
+			if(victims[4] != 0) {		//indirect block pointer
+				try {
+					Block indirectPointerBlk = new Block(victims[4], "rw");
+					for(String ip = indirectPointerBlk.readLine(); ip != null; ) {
+						int tempBlkNo = Integer.parseInt(ip);
+						FreeSpaceMgnt.consumeBlock(tempBlkNo);
+					}
+					indirectPointerBlk.close();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				FreeSpaceMgnt.consumeBlock(victims[4]);
+			}
+		}
 		for(int tempVictim: victims) {
 			if(tempVictim != 0)
 				freeBlockBitmap[tempVictim] = 0;
