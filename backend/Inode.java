@@ -23,10 +23,10 @@ public class Inode {
 	private int permission[];				// 3
 	private char fileType;					// 1
 	private int[] blockPointers;			// 5X5 = 25
-	//16 bytes for \n. So total inodeSize = 118
-	public static final int inodeSize = 118;
+	//17 bytes for \n. So total inodeSize = 119
+	public static final int inodeSize = 119;
 	
-	private byte[] modifiedBlocks;			//dirty bits for modified file content
+	private byte isDirty;			//dirty bits for modified file content
 	
 	Inode(){
 		signature = 0;
@@ -41,7 +41,7 @@ public class Inode {
 		permission = new int[]{7,7,7};
 		fileType = 'r';
 		blockPointers = new int[] {0,0,0,0,0};		//5th block pointer is second level indirect pointer. Hard code
-		modifiedBlocks = new byte[] {0,0,0,0,0};
+		isDirty = 1;
 	}
 	Inode(int inodeNum){							//constructor to bring existing Inode into memory (read)
 		int inodeBlockAdd = this.getInodeAddress(inodeNum);
@@ -65,7 +65,7 @@ public class Inode {
 					this.permission[i] = inodeBlock.readByte();
 				for(int i = 0; i < 5; i++)
 					this.blockPointers[i] = inodeBlock.read();
-				modifiedBlocks = new byte[] {0,0,0,0,0};
+				isDirty = 0;
 			}
 			else {
 				System.out.println("Wrong inode read, Inode = "+inodeNum);
@@ -93,7 +93,7 @@ public class Inode {
 		java.util.Date date= new java.util.Date();
 		this.createdTime = this.modifyTime = this.accessedTime = new Timestamp(date.getTime());
 		blockPointers = new int[5];
-		modifiedBlocks = new byte[] {0,0,0,0,0};
+		isDirty = 1;
 	}
 	
 	private int getInodeAddress(int inodeNumber) {
@@ -128,30 +128,35 @@ public class Inode {
 			}
 		}
 	}
-	public void writeToDisk() {							//this might blow up!!!
-		Block inodeB = this.getBlock();
-		String content;
-		try {
-			long seekSize = Inode.inodeSize + 1;
-			while(String.format("%03d", this.inodeNumber).compareTo(inodeB.readLine()) != 0) {
-				inodeB.seek(seekSize);
-				seekSize += Inode.inodeSize;
-			}
-			//seekSize -= Inode.inodeSize;
-			inodeB.seek(seekSize - 3);
-			content = String.format("%03d", this.inodeNumber)+"\n"+this.signature+"\n"+String.format("%02d", this.getBlockCount())+"\n"+this.fileType+"\n"+String.format("%03d", this.grpId)+"\n"+String.format("%02d", this.hardLinkCount);
-			content += "\n"+String.format("%02d", this.refCount)+"\n"+String.format("%03d", this.userId)+"\n";
-			content += this.accessedTime.toString().substring(0, 19)+"\n"+this.createdTime.toString().substring(0, 19)+"\n"+this.modifyTime.toString().substring(0, 19)+"\n"+this.permission[0]+this.permission[1]+this.permission[2]+"\n"+String.format("%05d", this.blockPointers[0]);
-			content += "\n"+String.format("%05d", this.blockPointers[1])+"\n"+String.format("%05d", this.blockPointers[2])+"\n"+String.format("%05d", this.blockPointers[3])+"\n"+String.format("%05d", this.blockPointers[4]);
-			inodeB.writeBytes(content);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
+	public void writeToDisk() {
+		if(this.isDirty == 1) {
+			Block inodeB = this.getBlock();
+			String content;
 			try {
-				inodeB.close();
+				long seekPos = 0;
+				String ip = inodeB.readLine();
+				while(ip != null && ip.compareTo(String.format("%03d", this.inodeNumber))!=0) {
+					inodeB.seek(inodeB.getFilePointer() - 4);
+					seekPos += Inode.inodeSize;
+					inodeB.seek(seekPos);
+					ip = inodeB.readLine();
+				}
+				inodeB.seek(inodeB.getFilePointer() - 4);
+				content = String.format("%03d", this.inodeNumber)+"\n"+this.signature+"\n"+String.format("%02d", this.getBlockCount())+"\n"+this.fileType+"\n"+String.format("%03d", this.grpId)+"\n"+String.format("%02d", this.hardLinkCount);
+				content += "\n"+String.format("%02d", this.refCount)+"\n"+String.format("%03d", this.userId)+"\n";
+				content += this.accessedTime.toString().substring(0, 19)+"\n"+this.createdTime.toString().substring(0, 19)+"\n"+this.modifyTime.toString().substring(0, 19)+"\n"+this.permission[0]+this.permission[1]+this.permission[2]+"\n"+String.format("%05d", this.blockPointers[0]);
+				content += "\n"+String.format("%05d", this.blockPointers[1])+"\n"+String.format("%05d", this.blockPointers[2])+"\n"+String.format("%05d", this.blockPointers[3])+"\n"+String.format("%05d", this.blockPointers[4])+"\n";
+				inodeB.writeBytes(content);
 			} catch (IOException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					inodeB.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
+			this.isDirty = 0;
 		}
 	}
 	private Block getBlock() {
@@ -163,15 +168,13 @@ public class Inode {
 		}
 		return retBlock;
 	}
-	public void writeContent(String content) {				//this will blow up!
-		int freePointer = 0;
-		while(this.blockPointers[freePointer] != 0 && freePointer < 4)		//only 4 are direct pointers
-			freePointer++;
-		
+	public void writeContent(String content) {				//this may blow up!
+		FreeSpaceMgnt.consumeBlocks(this.blockPointers);
+		int blockPointerIndex = 0;
 		int noOfBlocksReq = content.length()/Disk.maxBlockSize;
 		int start = 0, end = Math.min(content.length(), Disk.maxBlockSize);
 		Block tempBlock = null;
-		for(int i = 0; i < noOfBlocksReq; i++) {
+		while(noOfBlocksReq > 0 && blockPointerIndex < 4) {
 			tempBlock = FreeSpaceMgnt.getBlock();
 			try {
 				tempBlock.writeBytes(content.substring(start, end));
@@ -179,40 +182,42 @@ public class Inode {
 				end += Disk.maxBlockSize;
 				if(end > content.length())
 					end = content.length();
-				if(freePointer < 4) {
-					blockPointers[freePointer] = tempBlock.getBlockNumber();
-					freePointer++;
-					this.blockCount++;
-				}
-				else {								//use indirect block pointer
-					if(blockPointers[4] != 0) {		//there is indirect pointer block alloted
-						Block indirectPointerBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blockPointers[4]), "rw");
-						if(indirectPointerBlk.length() < 500) {
-							indirectPointerBlk.seek(indirectPointerBlk.length());
-							indirectPointerBlk.writeBytes(String.format("%05d", tempBlock.getBlockNumber()));		//need to append
-						}
-						else {
-							System.out.println("File Overflow");		//highly unlikely event: if u get time, do something here
-						}
-						indirectPointerBlk.close();
-					}
-					else {							//create indirect pointer block and then add
-						Block indirectPointerBlk = FreeSpaceMgnt.getBlock();
-						indirectPointerBlk.writeBytes(String.format("%05d", tempBlock.getBlockNumber()));		//need to append
-						indirectPointerBlk.close();
-					}
-				}
+				this.blockPointers[blockPointerIndex++] = tempBlock.getBlockNumber();
+				this.blockCount++;
+				noOfBlocksReq--;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		/*
-		else {
-			this.blockPointers[i] = tempBlock.getBlockNumber();
-			this.writeToDisk();			//unless dirty bit for every field is implemented we need to write whole Inode to disk.
-		}*/
-			
+		if(noOfBlocksReq > 0) {
+			tempBlock = FreeSpaceMgnt.getBlock();
+			this.blockPointers[4] = tempBlock.getBlockNumber();
+			Block indirectPointerBlk = null;
+			try {
+				indirectPointerBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", this.blockPointers[4]), "rw");
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			int seekSize = 6;			// 5 + 1\n
+			while(noOfBlocksReq > 0) {
+				tempBlock = FreeSpaceMgnt.getBlock();
+				try {
+					tempBlock.writeBytes(content.substring(start, end));
+					start = end;
+					end += Disk.maxBlockSize;
+					if(end > content.length())
+						end = content.length();
+					indirectPointerBlk.writeBytes(String.format("%05d", tempBlock.getBlockNumber()) + "\n");
+					indirectPointerBlk.seek(indirectPointerBlk.getFilePointer()+seekSize);
+					this.blockCount++;
+					noOfBlocksReq--;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		this.isDirty = 1;
+		this.writeToDisk();
 	}
 	public int getBlockCount() {
 		return blockCount;
@@ -220,5 +225,8 @@ public class Inode {
 	
 	public int[] getBlockPointers() {
 		return this.blockPointers;
+	}
+	public void releaseBlocks() {
+		FreeSpaceMgnt.consumeBlocks(this.blockPointers);
 	}
 }

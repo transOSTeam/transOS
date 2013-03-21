@@ -29,3 +29,9 @@ Inode Structure
 15: BlockPointer[2] 00000
 16: BlockPointer[3] 00000
 17: BlockPointer[4] 00000							//Indirect Block Pointer
+
+_____________________________________________________________________________________________________________________________
+DIRECTORY STRUCTURE
+1 d 123 folder1
+2 d 324 folder2
+3 r 411 newFile

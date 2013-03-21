@@ -43,9 +43,11 @@ public class FreeSpaceMgnt {
 		freeBlockBitmap[victim] = 0;
 		dirtyBuffer[1] = 1;
 	}
-	public static void consumeBlock(int[] victims) {
+	public static void consumeBlocks(int[] victims) {
 		for(int tempVictim: victims) {
-			freeBlockBitmap[tempVictim] = 0;
+			if(tempVictim != 0)
+				freeBlockBitmap[tempVictim] = 0;
+			//indirect blocks
 		}
 		dirtyBuffer[1] = 1;
 	}
