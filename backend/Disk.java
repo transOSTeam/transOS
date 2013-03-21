@@ -168,27 +168,7 @@ public class Disk {
 	}
 
 	public static void bootUp() {
-		Block superBlock = null;
-		try {
-			superBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		try {
-			superBlock.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		int[] freeBlockBitmapNo = new int[4];
-		try {
-			String bitmap = superBlock.readLine();
-			for(int i = 0; i < 4; i++) {
-				freeBlockBitmapNo[i] = Integer.parseInt(bitmap.substring(i, i+1));
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		FreeSpaceMgnt.initBitmap(freeBlockBitmapNo);		//part of boot-up
+		FreeSpaceMgnt.init();		//part of boot-up
 	}
 	
 	public static void shutDown() {

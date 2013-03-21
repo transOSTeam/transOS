@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.naming.directory.DirContext;
 
 //import backend.Directory.DirEntry;
 

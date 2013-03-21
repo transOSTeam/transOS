@@ -9,7 +9,7 @@ public class kickStart {
 	
 	public static void main(String[] args) {
 		kickStart.chkDisk();
-		//Disk.bootUp();
+		Disk.bootUp();
 		//start GUI
 		new GuiStarter();
 	}

@@ -48,23 +48,26 @@ public class Inode {
 		try {
 			Block inodeBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", inodeBlockAdd), "r");
 			inodeBlock.seek(inodeNum%4*inodeSize);
-			int intBuffer = inodeBlock.read();			//this can cause trouble!!! how many bytes read? maybe need to do -48
+			int intBuffer = Integer.parseInt(inodeBlock.readLine());
 			if(intBuffer == inodeNum) {
 				this.inodeNumber = inodeNum;
-				this.signature = inodeBlock.read();
-				this.blockCount = inodeBlock.read();
-				this.fileType = inodeBlock.readChar();
-				this.grpId = inodeBlock.read();
-				this.hardLinkCount = inodeBlock.read();
-				this.refCount = inodeBlock.read();
-				this.userId = inodeBlock.read();
+				this.signature = Integer.parseInt(inodeBlock.readLine());
+				this.blockCount = Integer.parseInt(inodeBlock.readLine());
+				this.fileType = inodeBlock.readLine().charAt(0);
+				this.grpId = Integer.parseInt(inodeBlock.readLine());
+				this.hardLinkCount = Integer.parseInt(inodeBlock.readLine());
+				this.refCount = Integer.parseInt(inodeBlock.readLine());
+				this.userId = Integer.parseInt(inodeBlock.readLine());
 				this.accessedTime = Timestamp.valueOf(inodeBlock.readLine());
 				this.createdTime = Timestamp.valueOf(inodeBlock.readLine());
 				this.modifyTime = Timestamp.valueOf(inodeBlock.readLine());
+				String permissions = inodeBlock.readLine();
+				this.permission = new int[3];
 				for(int i = 0; i < 3; i++)
-					this.permission[i] = inodeBlock.readByte();
+					this.permission[i] = Integer.parseInt(permissions.substring(i,i+1));
+				this.blockPointers = new int[5];
 				for(int i = 0; i < 5; i++)
-					this.blockPointers[i] = inodeBlock.read();
+					this.blockPointers[i] = Integer.parseInt(inodeBlock.readLine());
 				isDirty = 0;
 			}
 			else {
