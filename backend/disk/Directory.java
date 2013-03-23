@@ -1,4 +1,4 @@
-package backend;
+package backend.disk;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
 
 
 //import backend.Directory.DirEntry;
@@ -68,7 +69,7 @@ public class Directory {
 	public Inode makeDir(String dirName) {
 		int inodeNum = FreeSpaceMgnt.getInode();
 		Inode newDirInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'd');
-		String content = "d "+String.format("%03d", newDirInode)+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
+		String content = "d "+String.format("%03d", newDirInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
 		newDirInode.writeContent(content);
 		newDirInode.writeToDisk();
 		DirEntry tempDirEntry = new DirEntry(dirName, 'd');

@@ -1,7 +1,8 @@
-package backend;
+package backend.disk;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 
 public class FreeSpaceMgnt {
 	private static byte[] freeBlockBitmap = new byte[Disk.noOfBlocks];

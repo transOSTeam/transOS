@@ -1,4 +1,4 @@
-package backend;
+package backend.disk;
 
 public class DirEntry{
 	private String name;

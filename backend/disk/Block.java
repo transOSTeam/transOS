@@ -1,7 +1,8 @@
-package backend;
+package backend.disk;
 
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
+
 
 public class Block extends RandomAccessFile{
 

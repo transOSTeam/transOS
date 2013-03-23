@@ -1,4 +1,4 @@
-package backend;
+package backend.disk;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Timestamp;
+
 
 public class Inode {
 	private static int inodeNumberCounter = 0;
@@ -233,7 +234,9 @@ public class Inode {
 		FreeSpaceMgnt.consumeBlocks(this.blockPointers);
 	}
 	public char getFileType() {
-		// TODO Auto-generated method stub
 		return this.fileType;
+	}
+	public int getInodeNum(){
+		return this.inodeNumber;
 	}
 }

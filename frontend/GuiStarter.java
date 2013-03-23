@@ -2,7 +2,6 @@ package frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -12,7 +11,6 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryIteratorException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,9 +29,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 
-import backend.DirEntry;
-import backend.Directory;
-import backend.Inode;
+import backend.disk.DirEntry;
+import backend.disk.Directory;
+import backend.disk.Inode;
 
 public class GuiStarter {
 	JFrame mainFrame = new JFrame("Transparent OS");

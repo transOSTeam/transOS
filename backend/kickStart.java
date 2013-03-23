@@ -2,6 +2,8 @@ package backend;
 
 import java.io.File;
 
+import backend.disk.Disk;
+
 import frontend.GuiStarter;
 
 public class kickStart {
