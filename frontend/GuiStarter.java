@@ -165,8 +165,6 @@ public class GuiStarter {
 	}
 	
 	private void showExistingFolderAndFiles() {
-		//get existing folder list from parentpath and id
-		//HashMap<Integer, String> dirContent = rootDir.getDirContent();
 		
 		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
 		
@@ -186,7 +184,7 @@ public class GuiStarter {
 					e1.printStackTrace();
 				}
 			}
-			else{
+			else if(tempDirEntry.getType() == 'r'){
 				try {
 					img = ImageIO.read(new File("txt_file.gif"));
 				} catch (IOException e1) {
@@ -217,7 +215,7 @@ public class GuiStarter {
 					if(e.getClickCount() == 2){
 						String[] temp = e.getComponent().getName().split(",");
 						JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-						FolderListing fldrpane = new FolderListing(mainFrame,tempTxt.getText(),10);
+						FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
 						mainPanel.add(fldrpane);
 					}
 				}
@@ -254,7 +252,7 @@ public class GuiStarter {
 		JButton lbl;
 		String folderName = "new folder " + count;
 		
-		while(getNewFolderName(folderName) == "" ){
+		while(getNewFolderName(folderName).equals("")){
 			folderName = getNewFolderName("new folder " + count++);
 		}
 		
@@ -337,7 +335,7 @@ public class GuiStarter {
 		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<Integer, DirEntry> entry = it.next();
-			if(entry.getValue().getName() == compare){
+			if(entry.getValue().getName().equals(compare)){
 				return "";
 			}
 		}
