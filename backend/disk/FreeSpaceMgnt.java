@@ -148,7 +148,10 @@ public class FreeSpaceMgnt {
 		}
 		if(dirtyBuffer[1] == 1) {				//write dirty block buffer to disk
 			try {
-				int freeInodeBitmapNo = superBlock.read()-48;
+				superBlock.seek(0);
+				superBlock.readLine();
+				superBlock.readLine();
+				int freeInodeBitmapNo = Integer.parseInt(superBlock.readLine());
 				Block freeInodeBitmapBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo),"rw");
 				freeInodeBitmapBlk.write(freeInodeBitmap);
 				freeInodeBitmapBlk.close();

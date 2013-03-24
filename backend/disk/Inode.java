@@ -174,6 +174,7 @@ public class Inode {
 	}
 	public void writeContent(String content) {				//this may blow up!
 		FreeSpaceMgnt.consumeBlocks(this.blockPointers);
+		this.blockCount = 0;
 		int blockPointerIndex = 0;
 		float blockSize = Disk.maxBlockSize;
 		int noOfBlocksReq = (int) Math.ceil(content.length()/blockSize);
@@ -232,6 +233,7 @@ public class Inode {
 		return this.blockPointers;
 	}
 	public void releaseBlocks() {
+		this.blockCount = 0;
 		FreeSpaceMgnt.consumeBlocks(this.blockPointers);
 	}
 	public char getFileType() {

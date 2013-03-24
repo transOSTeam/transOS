@@ -26,10 +26,10 @@ public class Directory {
 		for(int i = 0; i < dirInode.getBlockCount(); i++) {
 			try {
 				Block tempBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blkPointers[i]), "r");
-				for(String tempBuffer = tempBlk.readLine(); tempBuffer != null; ) {
+				for(String tempBuffer = tempBlk.readLine(); tempBuffer != null;tempBuffer = tempBlk.readLine()) {
 					char tempType = tempBuffer.charAt(0);						//string is going to like this: "r 123\tfolder1\n"
 					int tempInode = Integer.parseInt(tempBuffer.substring(2, 5));
-					String tempName = tempBuffer.substring(5);
+					String tempName = tempBuffer.substring(6);
 					/*if(tempName.compareTo("..") == 0)
 						this.parentInodeNum = tempInode;*/
 					DirEntry tempDirEntry = new DirEntry(tempName, tempType);
@@ -57,7 +57,7 @@ public class Directory {
 	
 	public void deleteFile(int victimInodeNo) {
 		Inode victimInode = new Inode(victimInodeNo);
-		FreeSpaceMgnt.consumeBlocks(victimInode.getBlockPointers());
+		victimInode.releaseBlocks();
 		FreeSpaceMgnt.consumeInode(victimInodeNo);
 		this.dirContent.remove(victimInode);
 		Inode thisInode = new Inode(this.inodeNum);

@@ -35,29 +35,43 @@ import javax.swing.JTextField;
 
 import backend.disk.DirEntry;
 import backend.disk.Directory;
+import backend.disk.Disk;
 import backend.disk.Inode;
 
 public class GuiStarter {
-	JFrame mainFrame = new JFrame("Transparent OS");
-	JPanel mainPanel = new JPanel();
-	JPanel contentPanelWest = new JPanel();
-	JMenuBar mainMenuBar = new JMenuBar();
-	JMenu mainFileMenu = new JMenu("File");
-	JMenu newFileOrFolder = new JMenu("New");
-	JMenuItem newFile = new JMenuItem("File");
-	JMenuItem newFolder = new JMenuItem("Folder");
-	JPopupMenu popupMenu = new JPopupMenu();
-	JPopupMenu rightClickMenu = new JPopupMenu();
-	JLabel[] lblArray = new JLabel[100]; 
+	JFrame mainFrame;
+	JPanel mainPanel;
+	JPanel contentPanelWest;
+	JMenuBar mainMenuBar;
+	JMenu mainFileMenu;
+	JMenu newFileOrFolder;
+	JMenuItem newFile;
+	JMenuItem newFolder;
+	JPopupMenu popupMenu;
+	JPopupMenu rightClickMenu;
+	JLabel[] lblArray; 
 
-	private HashMap<String, JComponent> componentMap = new HashMap<String, JComponent>();
-	private int rootInoneNum = 2;// get root inode number
-	private Directory rootDir = new Directory(rootInoneNum);
+	private HashMap<String, JComponent> componentMap;
+	private static int rootInoneNum = 2;// get root inode number
+	private Directory rootDir;
 	private HashMap<Integer, DirEntry> dirContent;
-
 	private static int count = 0;
 	
-	public GuiStarter() {		
+	public GuiStarter() {
+		mainFrame = new JFrame("Transparent OS");
+		mainPanel = new JPanel();
+		contentPanelWest = new JPanel();
+		mainMenuBar = new JMenuBar();
+		mainFileMenu = new JMenu("File");
+		newFileOrFolder = new JMenu("New");
+		newFile = new JMenuItem("File");
+		newFolder = new JMenuItem("Folder");
+		popupMenu = new JPopupMenu();
+		rightClickMenu = new JPopupMenu();
+		lblArray = new JLabel[100]; 
+
+		componentMap = new HashMap<String, JComponent>();
+		rootDir = new Directory(rootInoneNum);
 		dirContent = rootDir.getDirContent();
 		
 		mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -70,7 +84,7 @@ public class GuiStarter {
 			public void windowDeiconified(WindowEvent arg0) {}
 			public void windowDeactivated(WindowEvent arg0) {}
 			public void windowClosing(WindowEvent arg0) {
-				System.out.println("shutdown");
+				Disk.shutDown();
 			}
 			public void windowClosed(WindowEvent arg0) {}
 			public void windowActivated(WindowEvent arg0) {}
@@ -100,7 +114,7 @@ public class GuiStarter {
 		
 		newFolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//createFolder(count++);
+				createFolder(count++);
 			}
 		});
 	}
@@ -117,7 +131,7 @@ public class GuiStarter {
 		JMenuItem item2 = new JMenuItem("New Folder");
 		item2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//createFolder(count++);
+				createFolder(count++);
 			}
 		});
 		popupMenu.add(item2);
@@ -159,7 +173,8 @@ public class GuiStarter {
 		JTextField txt;
 		BufferedImage img = null;
 		JButton lbl;
-		
+		int a = dirContent.size();
+		System.out.println(a);
 		while(it.hasNext()){
 			Map.Entry<Integer, DirEntry> entry = it.next();
 			
@@ -230,7 +245,7 @@ public class GuiStarter {
 			contentPanelWest.add(txt);
 			contentPanelWest.revalidate();
 			
-			it.remove();
+			
 		}
 	}
 	
