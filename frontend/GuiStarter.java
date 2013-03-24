@@ -2,15 +2,19 @@ package frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryIteratorException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,16 +50,31 @@ public class GuiStarter {
 	JPopupMenu rightClickMenu = new JPopupMenu();
 	JLabel[] lblArray = new JLabel[100]; 
 	
-	private HashMap<String, JComponent> componentMap = new HashMap<String, JComponent>();;
+	private HashMap<String, JComponent> componentMap = new HashMap<String, JComponent>();
 	private int rootInoneNum = 2;// get root inode number
 	private Directory rootDir = new Directory(rootInoneNum);
+	private HashMap<Integer, DirEntry> dirContent;
 	private static int count = 0;
 	
 	public GuiStarter() {		
+		dirContent = rootDir.getDirContent();
+		
 		mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		mainFrame.setVisible(true);
 		mainFrame.add(mainPanel);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		mainFrame.addWindowListener(new WindowListener() {
+			public void windowOpened(WindowEvent arg0) {}
+			public void windowIconified(WindowEvent arg0) {}
+			public void windowDeiconified(WindowEvent arg0) {}
+			public void windowDeactivated(WindowEvent arg0) {}
+			public void windowClosing(WindowEvent arg0) {
+				System.out.println("shutdown");
+			}
+			public void windowClosed(WindowEvent arg0) {}
+			public void windowActivated(WindowEvent arg0) {}
+		});
+		
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(mainMenuBar, BorderLayout.NORTH);
 		mainPanel.add(contentPanelWest,BorderLayout.WEST);
@@ -133,8 +152,7 @@ public class GuiStarter {
 	private void showExistingFolderAndFiles() {
 		//get existing folder list from parentpath and id
 		//HashMap<Integer, String> dirContent = rootDir.getDirContent();
-		HashMap<Integer, DirEntry> dirContent = rootDir.getDirContent();
-		//dirContent.put(10, new DirEntry("test",'d'));
+		
 		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
 		
 		JTextField txt;
@@ -172,7 +190,7 @@ public class GuiStarter {
 			txt.setBackground(mainPanel.getBackground());
 			txt.setDisabledTextColor(Color.BLACK);
 			String txtName = "txt,d," + entry.getKey().toString();
-			txt.setName(txtName); //test
+			txt.setName(txtName);
 			FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
 			txt.addMouseListener(listener);
 			txt.addKeyListener(listener);
@@ -216,21 +234,30 @@ public class GuiStarter {
 	}
 	
 	private void createFolder(int count){
-		//call a backend createfolder procedure here which returns a unique id for each folder
-		Inode dirInode = rootDir.makeDir("");
-		
 		BufferedImage img = null;
 		JButton lbl;
-		JTextField txt = new JTextField("new folder" + count);
+		String folderName = "new folder " + count;
+		
+		while(getNewFolderName(folderName) == "" ){
+			folderName = getNewFolderName("new folder " + count++);
+		}
+		
+		Inode dirInode = rootDir.makeDir(folderName);//problem here
+		JTextField txt = new JTextField(folderName);
+		
 		try {
 			img = ImageIO.read(new File("folder.gif"));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		
 		lbl = new JButton(new ImageIcon(img));
 		lbl.setBorder(BorderFactory.createEmptyBorder());
 		lbl.setContentAreaFilled(false);
+		String lblName = "lbl,d," + dirInode.getInodeNumber();
+		lbl.setName(lblName);
+		componentMap.put(lblName, lbl);
 		
 		txt.setEnabled(false);
 		txt.setBackground(mainPanel.getBackground());
@@ -239,6 +266,9 @@ public class GuiStarter {
 		FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
 		txt.addMouseListener(listener);
 		txt.addKeyListener(listener);
+		String txtName = "lbl,d," + dirInode.getInodeNumber();
+		txt.setName(txtName);
+		componentMap.put(txtName, txt);
 		
 		lbl.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
@@ -284,6 +314,19 @@ public class GuiStarter {
 			return (JComponent) componentMap.get(componentName);
 		}
 		else return null;
+	}
+	
+	private String getNewFolderName(String compare){
+		String ret = "";
+		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<Integer, DirEntry> entry = it.next();
+			if(entry.getValue().getName() == compare){
+				return "";
+			}
+		}
+		ret = compare;
+		return ret;
 	}
 	
 }
