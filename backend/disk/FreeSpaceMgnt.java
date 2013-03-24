@@ -2,6 +2,7 @@ package backend.disk;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 
 public class FreeSpaceMgnt {
@@ -137,14 +138,16 @@ public class FreeSpaceMgnt {
 				for(int i = 0; i < noOfBlocksBitmap; i++)
 					freeBlockBitmapNo[i] = Integer.parseInt(tempStr.substring(i, i+1));
 				
+				byte[] bitmapPieces;
 				for(int i = 0, off = 0; i < 4; i++, off += 500) {
 					Block bitmapBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo[i]),"rw");
-					bitmapBlock.write(freeBlockBitmap, off, 500);			//..test this!!!
+					bitmapPieces = FreeSpaceMgnt.prepBuffer(Arrays.copyOfRange(freeBlockBitmap, off, off + 500));
+					bitmapBlock.write(bitmapPieces);			//..test this!!!
 					bitmapBlock.close();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
-			}	
+			}
 		}
 		if(dirtyBuffer[1] == 1) {				//write dirty block buffer to disk
 			try {
@@ -153,12 +156,19 @@ public class FreeSpaceMgnt {
 				superBlock.readLine();
 				int freeInodeBitmapNo = Integer.parseInt(superBlock.readLine());
 				Block freeInodeBitmapBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo),"rw");
-				freeInodeBitmapBlk.write(freeInodeBitmap);
+				freeInodeBitmapBlk.write(prepBuffer(freeInodeBitmap));
 				freeInodeBitmapBlk.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+	}
+	private static byte[] prepBuffer(byte[] input) {
+		byte [] output = new byte[input.length];
+		for(int i = 0; i < input.length; i++) {
+			output[i] = (byte) (input[i] + 48);
+		}
+		return output;
 	}
 	public static void consumeInode(int victimInodeNo) {
 		FreeSpaceMgnt.freeInodeBitmap[victimInodeNo] = 0;
