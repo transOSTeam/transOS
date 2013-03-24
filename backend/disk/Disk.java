@@ -31,6 +31,7 @@ public class Disk {
 		makePartitionTable();
 		initializeInodes();
 		initializeFreeSpaceMgnt();
+		FreeSpaceMgnt.init();
 		createRootDir();
 	}
 	
@@ -52,7 +53,7 @@ public class Disk {
 			int i = 0;
 			for(int k = 0; k < 4; k++) {
 				for(int j = i % Disk.maxBlockSize; j < Disk.maxBlockSize; j++, i++) {
-					if(i < Disk.inodeEndBlock)				//all blocks up to last Inode block are considered to be system used and not available for user data
+					if(i <= Disk.inodeEndBlock)				//all blocks up to last Inode block are considered to be system used and not available for user data
 						freeSpaceBitmapContent[k][j] = 49;	//in ASCII 49 is 1
 					else
 						freeSpaceBitmapContent[k][j] = 48;
@@ -70,7 +71,8 @@ public class Disk {
 			int freeInodeBitmapNo = superBlock.read() - 48;
 			System.out.println(superBlock.getFilePointer());
 			byte freeInodeContent[] = new byte[(Disk.inodeEndBlock- Disk.inodeStartBlock + 1)*4];
-			for(i = 0; i < (Disk.inodeEndBlock - Disk.inodeStartBlock + 1)*4; i++) {
+			freeInodeContent[0] = freeInodeContent[1] = freeInodeContent[2] = 49;					//blocking Inodes
+			for(i = 3; i < (Disk.inodeEndBlock - Disk.inodeStartBlock + 1)*4; i++) {
 				freeInodeContent[i] = 48;
 			}
 			Block freeInodeBitmapBlk = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo), "rw");
@@ -86,6 +88,8 @@ public class Disk {
 
 	private static void createRootDir() {
 		Inode rootDirInode = new Inode(2,0,0,7,4,4,'d');
+	//	String content = "d "+String.format("%03d", 2)+"\t.\nd "+String.format("%03d", 2)+"\t..\n";
+	//	rootDirInode.writeContent(content);
 		rootDirInode.writeToDisk();
 	}
 

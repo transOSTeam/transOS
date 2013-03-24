@@ -95,4 +95,17 @@ public class Directory {
 	public HashMap<Integer, DirEntry> getDirContent(){
 		return this.dirContent;
 	}
+	
+	public int searchDir(String name) {				//linear search
+		int inodeNum = 0;
+		Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = this.dirContent.entrySet().iterator();
+		while(dirEntriesNavi.hasNext()) {
+			Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
+			if(pairs.getValue().getName() == name) {
+				inodeNum = pairs.getKey();
+				break;
+			}
+		}
+		return inodeNum;
+	}
 }

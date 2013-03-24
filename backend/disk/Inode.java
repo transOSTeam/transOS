@@ -175,7 +175,8 @@ public class Inode {
 	public void writeContent(String content) {				//this may blow up!
 		FreeSpaceMgnt.consumeBlocks(this.blockPointers);
 		int blockPointerIndex = 0;
-		int noOfBlocksReq = content.length()/Disk.maxBlockSize;
+		float blockSize = Disk.maxBlockSize;
+		int noOfBlocksReq = (int) Math.ceil(content.length()/blockSize);
 		int start = 0, end = Math.min(content.length(), Disk.maxBlockSize);
 		Block tempBlock = null;
 		while(noOfBlocksReq > 0 && blockPointerIndex < 4) {

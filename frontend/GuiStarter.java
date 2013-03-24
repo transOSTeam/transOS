@@ -46,9 +46,9 @@ public class GuiStarter {
 	JPopupMenu rightClickMenu = new JPopupMenu();
 	JLabel[] lblArray = new JLabel[100]; 
 	
-	private HashMap<String, JComponent> componentMap = new HashMap<String, JComponent>();;
-	private int rootInoneNum = 2;// get root inode number
-	private Directory rootDir = new Directory(rootInoneNum);
+	private static HashMap<String, JComponent> componentMap = new HashMap<String, JComponent>();;
+	private static int rootInoneNum = 2;// get root inode number
+	private static Directory rootDir = new Directory(rootInoneNum);
 	private static int count = 0;
 	
 	public GuiStarter() {		
@@ -80,7 +80,7 @@ public class GuiStarter {
 		
 		newFolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				createFolder(count++);
+				//createFolder(count++);
 			}
 		});
 	}
@@ -97,7 +97,7 @@ public class GuiStarter {
 		JMenuItem item2 = new JMenuItem("New Folder");
 		item2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				createFolder(count++);
+				//createFolder(count++);
 			}
 		});
 		popupMenu.add(item2);
@@ -217,7 +217,7 @@ public class GuiStarter {
 	
 	private void createFolder(int count){
 		//call a backend createfolder procedure here which returns a unique id for each folder
-		Inode dirInode = rootDir.makeDir("");
+		//Inode dirInode = rootDir.makeDir("");
 		
 		BufferedImage img = null;
 		JButton lbl;
