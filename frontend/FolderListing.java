@@ -31,6 +31,7 @@ import javax.swing.JTextField;
 
 import backend.disk.DirEntry;
 import backend.disk.Directory;
+import backend.disk.Inode;
 
 public class FolderListing extends JComponent{
 	private static final long serialVersionUID = 1L;
@@ -47,6 +48,7 @@ public class FolderListing extends JComponent{
 	int parentInodeNum;
 	JPopupMenu popupMenu;
 	JPopupMenu rightClickMenu;
+	JButton rightClickedLbl;
 	
 	private HashMap<String, JComponent> componentMap;
 	private Directory parentDir;
@@ -164,7 +166,7 @@ public class FolderListing extends JComponent{
 		JMenuItem item2 = new JMenuItem("New Folder");
 		item2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//createFolder(count++);
+				createFolder(count++);
 			}
 		});
 		popupMenu.add(item2);
@@ -177,7 +179,12 @@ public class FolderListing extends JComponent{
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
 			public void mousePressed(MouseEvent e) {
-				e.getComponent().setVisible(false);
+				String[] temp = rightClickedLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				parentDir.deleteFile(Integer.parseInt(temp[2]));
+				contentPanel.remove(rightClickedLbl);
+				contentPanel.remove(tempTxt);
+				contentPanel.revalidate();
 			}
 			public void mouseReleased(MouseEvent e) {
 			}
@@ -186,14 +193,23 @@ public class FolderListing extends JComponent{
 		
 		JMenuItem item2 = new JMenuItem("Rename");
 		item2.addMouseListener(new MouseListener() {
-			public void mouseClicked(MouseEvent e) {
-				e.getComponent().setVisible(false);
-			}
+			public void mouseClicked(MouseEvent e) {}
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
 			public void mousePressed(MouseEvent e) {}
 			public void mouseReleased(MouseEvent e) {}
 		});
+		rightClickMenu.add(item2);
+		
+		JMenuItem item3  = new JMenuItem("Properties");
+		item3.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {}
+		});
+		rightClickMenu.add(item3);
 	}
 	
 	private void showExistingFoldersAndFiles(){
@@ -202,8 +218,6 @@ public class FolderListing extends JComponent{
 		JTextField txt;
 		BufferedImage img = null;
 		JButton lbl;
-		int a = dirContent.size();
-		System.out.println(a);
 		while(it.hasNext()){
 			Map.Entry<Integer, DirEntry> entry = it.next();
 			
@@ -255,19 +269,25 @@ public class FolderListing extends JComponent{
 				public void mouseExited(MouseEvent e) {}
 				public void mousePressed(MouseEvent e) {
 					if(e.isPopupTrigger()){
+						rightClickedLbl = (JButton)e.getComponent();
 						rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				}
 				public void mouseReleased(MouseEvent e) {
 					if(e.isPopupTrigger()){
+						rightClickedLbl = (JButton)e.getComponent();
 						rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				}
 			});
 			lbl.addFocusListener(new FocusListener() {
 				public void focusLost(FocusEvent e) {
+					selectedFolder.setText("");
 				}
 				public void focusGained(FocusEvent e) {
+					String[] temp = e.getComponent().getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					selectedFolder.setText(tempTxt.getText());
 				}
 			});
 			
@@ -277,10 +297,101 @@ public class FolderListing extends JComponent{
 		}
 	}
 	
+	private void createFolder(int count){
+		BufferedImage img = null;
+		JButton lbl;
+		String folderName = "new folder " + count;
+		
+		while(getNewFolderName(folderName).equals("")){
+			folderName = getNewFolderName("new folder " + count++);
+		}
+		
+		Inode dirInode = parentDir.makeDir(folderName);
+		JTextField txt = new JTextField(folderName);
+		
+		try {
+			img = ImageIO.read(new File("folder.gif"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		lbl = new JButton(new ImageIcon(img));
+		lbl.setBorder(BorderFactory.createEmptyBorder());
+		lbl.setContentAreaFilled(false);
+		String lblName = "lbl,d," + dirInode.getInodeNum();
+		lbl.setName(lblName);
+		componentMap.put(lblName, lbl);
+		
+		txt.setEnabled(false);
+		txt.setBackground(mainPanel.getBackground());
+		txt.setDisabledTextColor(Color.BLACK);
+		txt.setName("path|inode number");
+		FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
+		txt.addMouseListener(listener);
+		txt.addKeyListener(listener);
+		String txtName = "txt,d," + dirInode.getInodeNum();
+		txt.setName(txtName);
+		componentMap.put(txtName, txt);
+		
+		lbl.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2){
+					String[] temp = e.getComponent().getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					FolderListing fldrpane = new FolderListing(mainFrame,parentPath + "/" + tempTxt.getText(),Integer.parseInt(temp[2]));
+					dialog.dispose();
+					mainPanel.add(fldrpane);
+				}
+			}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					rightClickedLbl = (JButton)e.getComponent();
+					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					rightClickedLbl = (JButton)e.getComponent();
+					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		});
+		
+		lbl.addFocusListener(new FocusListener() {
+			public void focusLost(FocusEvent e) {
+				selectedFolder.setText("");
+			}
+			public void focusGained(FocusEvent e) {
+				String[] temp = e.getComponent().getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				selectedFolder.setText(tempTxt.getText());
+			}
+		});
+		contentPanel.add(lbl);
+		contentPanel.add(txt);
+		contentPanel.revalidate();
+	}
+	
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
 			return (JComponent) componentMap.get(componentName);
 		}
 		else return null;
+	}
+	
+	private String getNewFolderName(String compare){
+		String ret = "";
+		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<Integer, DirEntry> entry = it.next();
+			if(entry.getValue().getName().equals(compare)){
+				return "";
+			}
+		}
+		ret = compare;
+		return ret;
 	}
 }

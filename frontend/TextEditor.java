@@ -1,10 +1,15 @@
 package frontend;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -12,6 +17,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JTextArea;
+import javax.swing.border.Border;
 
 public class TextEditor extends JComponent{
 	private static final long serialVersionUID = 1L;
@@ -23,11 +29,12 @@ public class TextEditor extends JComponent{
 	public TextEditor(JFrame parent) {
 		dialog = new JDialog(parent, "TEdit", false);
 		dialog.setLocationRelativeTo(parent);
-		dialog.setBounds(50, 50, 600, 400);
+		dialog.setBounds(50, 50, 700, 600);
 		dialog.setJMenuBar(menuBar);
 		menuBar.add(fileMenu);
 		
-		dialog.add(txtArea);		
+		Border border = BorderFactory.createLineBorder(Color.BLACK);
+		txtArea.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		txtArea.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent arg0) {}
 			public void keyReleased(KeyEvent arg0) {}
@@ -39,6 +46,7 @@ public class TextEditor extends JComponent{
 				}
 			}
 		});
+		dialog.add(txtArea);	
 		
 		addMenuItems();
 		dialog.setVisible(true);
