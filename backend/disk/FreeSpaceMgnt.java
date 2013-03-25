@@ -48,27 +48,23 @@ public class FreeSpaceMgnt {
 			if(victims[i] != 0) {
 				freeBlockBitmap[victims[i]] = 0;
 			}
-			if(victims[4] != 0) {		//indirect block pointer
-				try {
-					Block indirectPointerBlk = new Block(victims[4], "rw");
-					for(String ip = indirectPointerBlk.readLine(); ip != null; ) {
-						int tempBlkNo = Integer.parseInt(ip);
-						FreeSpaceMgnt.consumeBlock(tempBlkNo);
-					}
-					indirectPointerBlk.close();
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
+		}
+		if(victims[4] != 0) {		//indirect block pointer
+			try {
+				Block indirectPointerBlk = new Block(victims[4], "rw");
+				for(String ip = indirectPointerBlk.readLine(); ip != null; ) {
+					int tempBlkNo = Integer.parseInt(ip);
+					FreeSpaceMgnt.consumeBlock(tempBlkNo);
 				}
-				FreeSpaceMgnt.consumeBlock(victims[4]);
+				indirectPointerBlk.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			FreeSpaceMgnt.consumeBlock(victims[4]);
 		}
-		for(int tempVictim: victims) {
-			if(tempVictim != 0)
-				freeBlockBitmap[tempVictim] = 0;
-			//indirect blocks
-		}
+		
 		dirtyBuffer[1] = 1;
 	}
 	public static void init() {

@@ -166,7 +166,7 @@ public class Inode {
 	private Block getBlock() {
 		Block retBlock = null;
 		try {
-			retBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", this.inodeNumber/3 + Disk.inodeStartBlock), "rw");
+			retBlock = new Block(this.inodeNumber/4 + Disk.inodeStartBlock, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
