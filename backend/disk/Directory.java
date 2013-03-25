@@ -59,10 +59,10 @@ public class Directory {
 		Inode victimInode = new Inode(victimInodeNo);
 		victimInode.releaseBlocks();
 		FreeSpaceMgnt.consumeInode(victimInodeNo);
-		this.dirContent.remove(victimInode);
-		Inode thisInode = new Inode(this.inodeNum);
+		this.dirContent.remove(victimInodeNo);
+		/*Inode thisInode = new Inode(this.inodeNum);
 		thisInode.releaseBlocks();
-		FreeSpaceMgnt.consumeInode(this.inodeNum);
+		FreeSpaceMgnt.consumeInode(this.inodeNum);*/
 		this.writeToDisk();
 	}
 	

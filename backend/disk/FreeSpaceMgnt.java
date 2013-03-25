@@ -10,7 +10,7 @@ public class FreeSpaceMgnt {
 	private static byte[] freeInodeBitmap = new byte[(Disk.inodeEndBlock - Disk.inodeStartBlock + 1)*(Disk.maxBlockSize/Inode.inodeSize)];
 	private static byte[] dirtyBuffer = {0,0};					//0: inode buffer; 1: freeBlock buffer;
 	
-	public static Block getBlock() {
+	public static int getBlockNo() {
 		int freeBlockAddress = 0;
 		for(int i = 0; i < Disk.noOfBlocks; i++)
 			if(freeBlockBitmap[i] == 0) {
@@ -19,13 +19,7 @@ public class FreeSpaceMgnt {
 				dirtyBuffer[1] = 1;
 				break;
 			}
-		Block retBlock = null;
-		try {
-			retBlock = new Block(Disk.transDisk + "/" +String.format("%05d", freeBlockAddress), "rw");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}		
-		return retBlock;
+		return freeBlockAddress;
 	}
 	public static int getInode() {
 		int inodeNum = 0;

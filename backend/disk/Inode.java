@@ -172,7 +172,7 @@ public class Inode {
 		}
 		return retBlock;
 	}
-	public void writeContent(String content) {				//this may blow up!
+	public void writeContent(String content) {				//this may blow up! | ugly hack @25march
 		FreeSpaceMgnt.consumeBlocks(this.blockPointers);
 		this.blockCount = 0;
 		int blockPointerIndex = 0;
@@ -181,7 +181,20 @@ public class Inode {
 		int start = 0, end = Math.min(content.length(), Disk.maxBlockSize);
 		Block tempBlock = null;
 		while(noOfBlocksReq > 0 && blockPointerIndex < 4) {
-			tempBlock = FreeSpaceMgnt.getBlock();
+			int tempBlockNo = FreeSpaceMgnt.getBlockNo();		//get block no..delete file..create file..create block then write
+			File tempBlockFile = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+			tempBlockFile.delete();
+			File tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+			try {
+				tempBlockFile1.createNewFile();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			try {
+				tempBlock = new Block(tempBlockNo, "rw");
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
 			try {
 				tempBlock.writeBytes(content.substring(start, end));
 				start = end;
@@ -196,7 +209,20 @@ public class Inode {
 			}
 		}
 		if(noOfBlocksReq > 0) {
-			tempBlock = FreeSpaceMgnt.getBlock();
+			int tempBlockNo = FreeSpaceMgnt.getBlockNo();
+			File tempBlockFile = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+			tempBlockFile.delete();
+			File tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+			try {
+				tempBlockFile1.createNewFile();
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
+			try {
+				tempBlock = new Block(tempBlockNo, "rw");
+			} catch (FileNotFoundException e2) {
+				e2.printStackTrace();
+			}
 			this.blockPointers[4] = tempBlock.getBlockNumber();
 			Block indirectPointerBlk = null;
 			try {
@@ -206,7 +232,20 @@ public class Inode {
 			}
 			int seekSize = 6;			// 5 + 1\n
 			while(noOfBlocksReq > 0) {
-				tempBlock = FreeSpaceMgnt.getBlock();
+				tempBlockNo = FreeSpaceMgnt.getBlockNo();
+				tempBlockFile = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+				tempBlockFile.delete();
+				tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+				try {
+					tempBlockFile1.createNewFile();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				try {
+					tempBlock = new Block(tempBlockNo, "rw");
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				}
 				try {
 					tempBlock.writeBytes(content.substring(start, end));
 					start = end;
