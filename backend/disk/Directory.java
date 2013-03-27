@@ -108,4 +108,10 @@ public class Directory {
 		}
 		return inodeNum;
 	}
+	
+	public void renameFile(int targetInodeNum, String newFileName) {
+		this.dirContent.remove(targetInodeNum);
+		this.dirContent.put(targetInodeNum, new DirEntry(newFileName, 'd'));
+		this.writeToDisk();
+	}
 }
