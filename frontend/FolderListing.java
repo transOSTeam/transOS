@@ -86,7 +86,21 @@ public class FolderListing extends JComponent{
 		mainPanel.add(menuBar,BorderLayout.NORTH);
 		mainPanel.add(contentPanel,BorderLayout.WEST);
 		mainPanel.add(contentPanelSouth,BorderLayout.SOUTH);
-		mainPanel.addMouseListener(new PopupTriggerListener(popupMenu));
+		mainPanel.addMouseListener(new MouseListener() {
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mouseExited(MouseEvent arg0) {}
+			public void mouseEntered(MouseEvent arg0) {}
+			public void mouseClicked(MouseEvent arg0) {}
+		});
 		
 		contentPanelSouth.add(selectedFolder);
 		contentPanelSouth.add(openBtn);
@@ -133,7 +147,21 @@ public class FolderListing extends JComponent{
 		mainPanel.add(menuBar,BorderLayout.NORTH);
 		mainPanel.add(contentPanel,BorderLayout.WEST);
 		mainPanel.add(contentPanelSouth,BorderLayout.SOUTH);
-		mainPanel.addMouseListener(new PopupTriggerListener(popupMenu));
+		mainPanel.addMouseListener(new MouseListener() {
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mouseExited(MouseEvent arg0) {}
+			public void mouseEntered(MouseEvent arg0) {}
+			public void mouseClicked(MouseEvent arg0) {}
+		});
 		
 		contentPanelSouth.add(selectedFolder);
 		contentPanelSouth.add(openBtn);

@@ -97,7 +97,6 @@ public class GuiStarter {
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(mainMenuBar, BorderLayout.NORTH);
 		mainPanel.add(contentPanelWest,BorderLayout.WEST);
-		//mainPanel.addMouseListener(new PopupTriggerListener(popupMenu));
 		mainPanel.addMouseListener(new MouseListener() {
 			public void mouseReleased(MouseEvent e) {
 				if(e.isPopupTrigger()){
