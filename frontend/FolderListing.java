@@ -7,6 +7,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -196,7 +198,13 @@ public class FolderListing extends JComponent{
 			public void mouseClicked(MouseEvent e) {}
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
-			public void mousePressed(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setEnabled(true);
+				tempTxt.setForeground(Color.BLUE);
+				tempTxt.setBackground(mainPanel.getBackground());
+			}
 			public void mouseReleased(MouseEvent e) {}
 		});
 		rightClickMenu.add(item2);
@@ -244,25 +252,20 @@ public class FolderListing extends JComponent{
 			lbl.setName(lblName);
 			componentMap.put(lblName, lbl);
 			
-			txt = new JTextField(entry.getValue().getName());			
-			txt.setEnabled(false);
-			txt.setBackground(mainPanel.getBackground());
-			txt.setDisabledTextColor(Color.BLACK);
-			String txtName = "txt,d," + entry.getKey().toString();
-			txt.setName(txtName);
-			FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
-			txt.addMouseListener(listener);
-			txt.addKeyListener(listener);
-			componentMap.put(txtName, txt);
-			
 			lbl.addMouseListener(new MouseListener() {
 				public void mouseClicked(MouseEvent e) {
 					if(e.getClickCount() == 2){
 						String[] temp = e.getComponent().getName().split(",");
 						JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-						FolderListing fldrpane = new FolderListing(mainFrame,parentPath + "/" + tempTxt.getText(),Integer.parseInt(temp[2]));
-						dialog.dispose();
-						mainPanel.add(fldrpane);
+						if(temp[1].equals("d")){
+							FolderListing fldrpane = new FolderListing(mainFrame,parentPath + "/" + tempTxt.getText(),Integer.parseInt(temp[2]));
+							dialog.dispose();
+							mainPanel.add(fldrpane);
+						}
+						else if(temp[1].equals("r")){
+							TextEditor txtEdit = new TextEditor(mainFrame);
+							mainPanel.add(txtEdit);
+						}
 					}
 				}
 				public void mouseEntered(MouseEvent e) {}
@@ -288,6 +291,46 @@ public class FolderListing extends JComponent{
 					String[] temp = e.getComponent().getName().split(",");
 					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 					selectedFolder.setText(tempTxt.getText());
+				}
+			});
+			
+			txt = new JTextField(entry.getValue().getName());			
+			txt.setEnabled(false);
+			txt.setBackground(mainPanel.getBackground());
+			txt.setDisabledTextColor(Color.BLACK);
+			txt.setBorder(null);
+			String txtName = "txt,d," + entry.getKey().toString();
+			txt.setName(txtName);
+			componentMap.put(txtName, txt);
+			
+			txt.addMouseListener(new MouseListener() {
+				public void mouseReleased(MouseEvent arg0) {}
+				public void mousePressed(MouseEvent arg0) {}
+				public void mouseExited(MouseEvent e) {
+					e.getComponent().setForeground(Color.BLACK);
+				}
+				public void mouseEntered(MouseEvent arg0) {}
+				public void mouseClicked(MouseEvent e) {
+					e.getComponent().setEnabled(true);
+					e.getComponent().setBackground(mainPanel.getBackground());
+					e.getComponent().setForeground(Color.BLUE);
+				}
+			});
+			txt.addKeyListener(new KeyListener() {
+				public void keyTyped(KeyEvent e) {}
+				public void keyReleased(KeyEvent e) {}
+				public void keyPressed(KeyEvent e) {
+					JTextField txt;
+					if(e.getKeyCode() == KeyEvent.VK_ENTER){
+						e.getComponent().setEnabled(false);
+						e.getComponent().setBackground(mainPanel.getBackground());
+						e.getComponent().setForeground(Color.BLACK);
+						
+						txt = (JTextField)e.getSource();
+						
+						String[] temp = txt.getName().split(",");
+						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());						
+					}
 				}
 			});
 			
@@ -323,25 +366,20 @@ public class FolderListing extends JComponent{
 		lbl.setName(lblName);
 		componentMap.put(lblName, lbl);
 		
-		txt.setEnabled(false);
-		txt.setBackground(mainPanel.getBackground());
-		txt.setDisabledTextColor(Color.BLACK);
-		txt.setName("path|inode number");
-		FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
-		txt.addMouseListener(listener);
-		txt.addKeyListener(listener);
-		String txtName = "txt,d," + dirInode.getInodeNum();
-		txt.setName(txtName);
-		componentMap.put(txtName, txt);
-		
 		lbl.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2){
 					String[] temp = e.getComponent().getName().split(",");
 					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-					FolderListing fldrpane = new FolderListing(mainFrame,parentPath + "/" + tempTxt.getText(),Integer.parseInt(temp[2]));
-					dialog.dispose();
-					mainPanel.add(fldrpane);
+					if(temp[1].equals("d")){
+						FolderListing fldrpane = new FolderListing(mainFrame,parentPath + "/" + tempTxt.getText(),Integer.parseInt(temp[2]));
+						dialog.dispose();
+						mainPanel.add(fldrpane);
+					}
+					else if(temp[1].equals("r")){
+						TextEditor txtEdit = new TextEditor(mainFrame);
+						mainPanel.add(txtEdit);
+					}
 				}
 			}
 			public void mouseEntered(MouseEvent e) {}
@@ -370,6 +408,46 @@ public class FolderListing extends JComponent{
 				selectedFolder.setText(tempTxt.getText());
 			}
 		});
+		
+		txt.setEnabled(false);
+		txt.setBackground(mainPanel.getBackground());
+		txt.setDisabledTextColor(Color.BLACK);
+		txt.setBorder(null);
+		String txtName = "txt,d," + dirInode.getInodeNum();
+		txt.setName(txtName);
+		componentMap.put(txtName, txt);
+		
+		txt.addMouseListener(new MouseListener() {
+			public void mouseReleased(MouseEvent arg0) {}
+			public void mousePressed(MouseEvent arg0) {}
+			public void mouseExited(MouseEvent e) {
+				e.getComponent().setForeground(Color.BLACK);
+			}
+			public void mouseEntered(MouseEvent arg0) {}
+			public void mouseClicked(MouseEvent e) {
+				e.getComponent().setEnabled(true);
+				e.getComponent().setBackground(mainPanel.getBackground());
+				e.getComponent().setForeground(Color.BLUE);
+			}
+		});
+		txt.addKeyListener(new KeyListener() {
+			public void keyTyped(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {}
+			public void keyPressed(KeyEvent e) {
+				JTextField txt;
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					e.getComponent().setEnabled(false);
+					e.getComponent().setBackground(mainPanel.getBackground());
+					e.getComponent().setForeground(Color.BLACK);
+					
+					txt = (JTextField)e.getSource();
+					
+					String[] temp = txt.getName().split(",");
+					parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());	
+				}
+			}
+		});	
+		
 		contentPanel.add(lbl);
 		contentPanel.add(txt);
 		contentPanel.revalidate();

@@ -2,11 +2,14 @@ package frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
@@ -31,6 +34,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import backend.disk.DirEntry;
@@ -57,6 +61,7 @@ public class GuiStarter {
 	private HashMap<Integer, DirEntry> dirContent;
 	private static int count = 0;
 	
+	
 	public GuiStarter() {
 		mainFrame = new JFrame("Transparent OS");
 		mainPanel = new JPanel();
@@ -68,7 +73,7 @@ public class GuiStarter {
 		newFolder = new JMenuItem("Folder");
 		popupMenu = new JPopupMenu();
 		rightClickMenu = new JPopupMenu();
-
+		
 		componentMap = new HashMap<String, JComponent>();
 		rootDir = new Directory(rootInoneNum);
 		dirContent = rootDir.getDirContent();
@@ -92,7 +97,22 @@ public class GuiStarter {
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(mainMenuBar, BorderLayout.NORTH);
 		mainPanel.add(contentPanelWest,BorderLayout.WEST);
-		mainPanel.addMouseListener(new PopupTriggerListener(popupMenu));
+		//mainPanel.addMouseListener(new PopupTriggerListener(popupMenu));
+		mainPanel.addMouseListener(new MouseListener() {
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mouseExited(MouseEvent arg0) {}
+			public void mouseEntered(MouseEvent arg0) {}
+			public void mouseClicked(MouseEvent arg0) {}
+		});
 		addMenuItems();
 		addPopupMenuItems();
 		addRightClickMenuitems();
@@ -160,7 +180,13 @@ public class GuiStarter {
 			public void mouseClicked(MouseEvent e) {}
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
-			public void mousePressed(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setEnabled(true);
+				tempTxt.setForeground(Color.BLUE);
+				tempTxt.setBackground(mainPanel.getBackground());
+			}
 			public void mouseReleased(MouseEvent e) {}
 		});
 		rightClickMenu.add(item2);
@@ -209,24 +235,19 @@ public class GuiStarter {
 			lbl.setName(lblName);
 			componentMap.put(lblName, lbl);
 			
-			txt = new JTextField(entry.getValue().getName());			
-			txt.setEnabled(false);
-			txt.setBackground(mainPanel.getBackground());
-			txt.setDisabledTextColor(Color.BLACK);
-			String txtName = "txt,d," + entry.getKey().toString();
-			txt.setName(txtName);
-			FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
-			txt.addMouseListener(listener);
-			txt.addKeyListener(listener);
-			componentMap.put(txtName, txt);
-			
 			lbl.addMouseListener(new MouseListener() {
 				public void mouseClicked(MouseEvent e) {
 					if(e.getClickCount() == 2){
 						String[] temp = e.getComponent().getName().split(",");
 						JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-						FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
-						mainPanel.add(fldrpane);
+						if(temp[1].equals("d")){
+							FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
+							mainPanel.add(fldrpane);
+						}
+						else if(temp[1].equals("d")){
+							TextEditor txtEdit = new TextEditor(mainFrame);
+							mainPanel.add(txtEdit);
+						}
 					}
 				}
 				public void mouseEntered(MouseEvent e) {}
@@ -251,12 +272,51 @@ public class GuiStarter {
 				}
 			});
 			
+			txt = new JTextField(entry.getValue().getName());			
+			txt.setEnabled(false);
+			txt.setBackground(mainPanel.getBackground());
+			txt.setDisabledTextColor(Color.BLACK);
+			txt.setBorder(null);
+			String txtName = "txt,d," + entry.getKey().toString();
+			txt.setName(txtName);
+			componentMap.put(txtName, txt);
+			
+			txt.addMouseListener(new MouseListener() {
+				public void mouseReleased(MouseEvent arg0) {}
+				public void mousePressed(MouseEvent arg0) {}
+				public void mouseExited(MouseEvent e) {
+					e.getComponent().setForeground(Color.BLACK);
+				}
+				public void mouseEntered(MouseEvent arg0) {}
+				public void mouseClicked(MouseEvent e) {
+					e.getComponent().setEnabled(true);
+					e.getComponent().setBackground(mainPanel.getBackground());
+					e.getComponent().setForeground(Color.BLUE);
+				}
+			});
+			txt.addKeyListener(new KeyListener() {
+				public void keyTyped(KeyEvent e) {}
+				public void keyReleased(KeyEvent e) {}
+				public void keyPressed(KeyEvent e) {
+					JTextField txt;
+					if(e.getKeyCode() == KeyEvent.VK_ENTER){
+						e.getComponent().setEnabled(false);
+						e.getComponent().setBackground(mainPanel.getBackground());
+						e.getComponent().setForeground(Color.BLACK);
+						
+						txt = (JTextField)e.getSource();
+						
+						String[] temp = txt.getName().split(",");
+						rootDir.renameFile(Integer.parseInt(temp[2]), txt.getText());						
+					}
+				}
+			});
+			
 			contentPanelWest.add(lbl);
 			contentPanelWest.add(txt);
 			contentPanelWest.revalidate();
 			
 		}
-		//System.out.println("component map size " + componentMap.size());
 	}
 	
 	private void createFolder(int count){
@@ -283,26 +343,20 @@ public class GuiStarter {
 		lbl.setContentAreaFilled(false);
 		String lblName = "lbl,d," + dirInode.getInodeNum();
 		lbl.setName(lblName);
-		componentMap.put(lblName, lbl);
-		
-		txt.setEnabled(false);
-		txt.setBackground(mainPanel.getBackground());
-		txt.setDisabledTextColor(Color.BLACK);
-		txt.setName("path|inode number");
-		FolderNameEditListener listener = new FolderNameEditListener(mainPanel);
-		txt.addMouseListener(listener);
-		txt.addKeyListener(listener);
-		String txtName = "txt,d," + dirInode.getInodeNum();
-		txt.setName(txtName);
-		componentMap.put(txtName, txt);
-		
+		componentMap.put(lblName, lbl);		
 		lbl.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2){
 					String[] temp = e.getComponent().getName().split(",");
 					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-					FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
-					mainPanel.add(fldrpane);
+					if(temp[1].equals("d")){
+						FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
+						mainPanel.add(fldrpane);
+					}
+					else if(temp[1].equals("d")){
+						TextEditor txtEdit = new TextEditor(mainFrame);
+						mainPanel.add(txtEdit);
+					}
 				}
 			}
 			public void mouseEntered(MouseEvent e) {}
@@ -319,28 +373,60 @@ public class GuiStarter {
 					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
-		});
-		
+		});		
 		lbl.addFocusListener(new FocusListener() {
 			public void focusLost(FocusEvent e) {
 			}
 			public void focusGained(FocusEvent e) {
 			}
 		});
+		
+		
+		txt.setEnabled(false);
+		txt.setBackground(mainPanel.getBackground());
+		txt.setDisabledTextColor(Color.BLACK);
+		txt.setBorder(null);
+		String txtName = "txt,d," + dirInode.getInodeNum();
+		txt.setName(txtName);
+		componentMap.put(txtName, txt);
+		
+		txt.addMouseListener(new MouseListener() {
+			public void mouseReleased(MouseEvent arg0) {}
+			public void mousePressed(MouseEvent arg0) {}
+			public void mouseExited(MouseEvent e) {
+				e.getComponent().setForeground(Color.BLACK);
+			}
+			public void mouseEntered(MouseEvent arg0) {}
+			public void mouseClicked(MouseEvent e) {
+				e.getComponent().setEnabled(true);
+				e.getComponent().setBackground(mainPanel.getBackground());
+				e.getComponent().setForeground(Color.BLUE);
+			}
+		});
+		txt.addKeyListener(new KeyListener() {
+			public void keyTyped(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {}
+			public void keyPressed(KeyEvent e) {
+				JTextField txt;
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					e.getComponent().setEnabled(false);
+					e.getComponent().setBackground(mainPanel.getBackground());
+					e.getComponent().setForeground(Color.BLACK);
+					
+					txt = (JTextField)e.getSource();
+					
+					String[] temp = txt.getName().split(",");
+					rootDir.renameFile(Integer.parseInt(temp[2]), txt.getText());						
+				}
+			}
+		});
+		
 		contentPanelWest.add(lbl);
 		contentPanelWest.add(txt);
 		contentPanelWest.revalidate();
 		
-		//System.out.println("component map size " + componentMap.size());
-		//System.out.println(" new folder num " + dirInode.getInodeNum());
 	}
 	
-	private void createComponentMap(){
-		JComponent[] components = (JComponent[]) mainFrame.getContentPane().getComponents();
-		for(int i = 0;i < components.length;i++){
-			componentMap.put(components[i].getName(), components[i]);
-		}
-	}
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
 			return (JComponent) componentMap.get(componentName);
