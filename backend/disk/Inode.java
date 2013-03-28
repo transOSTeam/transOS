@@ -281,4 +281,17 @@ public class Inode {
 	public int getInodeNum(){
 		return this.inodeNumber;
 	}
+	public String getAccessedTime(){
+		return this.accessedTime.toString();
+	}
+	public String getModifiedTime(){
+		return this.modifyTime.toString();
+	}
+	public String getCreatedTime(){
+		return this.createdTime.toString();
+	}
+	public int[] getPermissions(){
+		return this.permission;
+	}
+	
 }

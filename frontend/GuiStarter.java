@@ -2,8 +2,6 @@ package frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -17,7 +15,6 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryIteratorException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,13 +25,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import backend.disk.DirEntry;
@@ -195,7 +190,12 @@ public class GuiStarter {
 			public void mouseClicked(MouseEvent e) {}
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
-			public void mousePressed(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				Properties prop = new Properties(mainFrame, Integer.parseInt(temp[2]), tempTxt.getText());
+				mainPanel.add(prop);
+			}
 			public void mouseReleased(MouseEvent e) {}
 		});
 		rightClickMenu.add(item3);
@@ -333,7 +333,6 @@ public class GuiStarter {
 		try {
 			img = ImageIO.read(new File("folder.gif"));
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		

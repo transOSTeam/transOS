@@ -242,7 +242,12 @@ public class FolderListing extends JComponent{
 			public void mouseClicked(MouseEvent e) {}
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
-			public void mousePressed(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				Properties prop = new Properties(mainFrame, Integer.parseInt(temp[2]), tempTxt.getText());
+				mainPanel.add(prop);
+			}
 			public void mouseReleased(MouseEvent e) {}
 		});
 		rightClickMenu.add(item3);
@@ -383,7 +388,6 @@ public class FolderListing extends JComponent{
 		try {
 			img = ImageIO.read(new File("folder.gif"));
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
