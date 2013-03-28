@@ -1,6 +1,7 @@
 package backend.disk;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 
 
@@ -19,5 +20,15 @@ public class Block extends RandomAccessFile{
 	public int getBlockNumber(){
 		return this.blockNumber;
 	}
-	
+	public String getContent() {
+		String content = "", buffer;
+		try {
+			while((buffer = this.readLine()) != null) {
+				content += buffer;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
 }

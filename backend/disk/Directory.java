@@ -1,7 +1,10 @@
 package backend.disk;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -13,7 +16,7 @@ import java.util.Map.Entry;
 
 
 public class Directory {
-	
+	private static int tempNo;
 	private int inodeNum;
 	//private int parentInodeNum;
 	private HashMap<Integer, DirEntry> dirContent;  
@@ -113,5 +116,41 @@ public class Directory {
 		this.dirContent.remove(targetInodeNum);
 		this.dirContent.put(targetInodeNum, new DirEntry(newFileName, 'd'));
 		this.writeToDisk();
+	}
+	
+	public void copy(int srcFileInode, int targetDirInode) {
+		Inode victimInode = new Inode(srcFileInode);
+		Inode targetInode = new Inode(victimInode);
+		DirEntry victimEntry = this.dirContent.get(srcFileInode);
+		Directory targetDir = new Directory(targetDirInode);
+		targetDir.dirContent.put(targetInode.getInodeNum(), new DirEntry(victimEntry.getName(), victimEntry.getType()));
+		targetDir.writeToDisk();
+	}
+	public void move(int scrFileInode, int targetDirInode) {	//just cut the entry from source to target directory
+		DirEntry victimEntry = this.dirContent.remove(scrFileInode);
+		Directory targetDir = new Directory(targetDirInode);
+		targetDir.dirContent.put(scrFileInode, victimEntry);
+		
+		this.writeToDisk();
+		targetDir.writeToDisk();
+	}
+	
+	public void editFile(int fileInodeNum) {
+		Inode fileInode = new Inode(fileInodeNum);
+		if(fileInode.getFileType() == 'r') {
+			String content = fileInode.getFileContent();
+			try {
+				String tempNoS = ""+tempNo;
+				File tempFile = File.createTempFile("transOSTemp", tempNoS);
+				tempNo++;
+				RandomAccessFile tempRF = new RandomAccessFile(tempFile, "rw");
+				tempRF.writeBytes(content);
+				Desktop.getDesktop().edit(tempFile);
+				//do stuff here...copy back to inode.writeContent();
+				tempRF.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

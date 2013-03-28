@@ -100,6 +100,13 @@ public class Inode {
 		isDirty = 1;
 	}
 	
+	public Inode(Inode victimInode) {
+		int newInodeNo = FreeSpaceMgnt.getInode();
+		Inode newInode = new Inode(newInodeNo, victimInode.userId,victimInode.grpId, victimInode.permission[0], victimInode.permission[1], victimInode.permission[2], victimInode.fileType);
+		String content = victimInode.getFileContent();
+		newInode.writeContent(content);
+		newInode.writeToDisk();
+	}
 	private int getInodeAddress(int inodeNumber) {
 		int address = 0;
 		address = Disk.inodeStartBlock + (int)inodeNumber/4;
@@ -267,7 +274,40 @@ public class Inode {
 	public int getBlockCount() {
 		return blockCount;
 	}
-	
+	public String getFileContent() {
+		String content = "";
+		for(int i = 0; i < 4; i++) {
+			try {
+				if(this.blockPointers[i] != 0) {
+					Block tempBlock = new Block(this.blockPointers[i], "r");
+					content += tempBlock.getContent();
+					tempBlock.close();
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}	
+		}
+		if(this.blockPointers[4] != 0) {
+			try {
+				Block indirectPtBlock = new Block(this.blockPointers[4],"r");
+				String blkBuffer;
+				while((blkBuffer = indirectPtBlock.readLine()) != null) {
+					Block tempBlock = new Block(Integer.parseInt(blkBuffer), "r");
+					content += tempBlock.getContent();
+					tempBlock.close();
+				}
+				indirectPtBlock.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		return content;
+	}
 	public int[] getBlockPointers() {
 		return this.blockPointers;
 	}
