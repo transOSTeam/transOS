@@ -57,6 +57,7 @@ public class FolderListing extends JComponent{
 	private Directory parentDir;
 	private HashMap<Integer, DirEntry> dirContent;
 	private static int count = 0;
+	private static int count1 = 0;
 	
 	private Stack<String> s;
 	
@@ -211,8 +212,7 @@ public class FolderListing extends JComponent{
 		JMenuItem item1 = new JMenuItem("New File");
 		item1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				TextEditor txtEdit = new TextEditor(mainFrame);
-				mainPanel.add(txtEdit);
+				createFile(count1++);
 			}
 		});
 		
@@ -226,6 +226,15 @@ public class FolderListing extends JComponent{
 		JMenuItem item3  = new JMenuItem("Paste");
 		item3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				if(GuiStarter.copyFrom != parentInodeNum){
+					parentDir.copy(GuiStarter.copiedInodeNum, parentInodeNum);
+					parentDir = null;
+					parentDir = new Directory(parentInodeNum);
+					dirContent = parentDir.getDirContent();
+					contentPanel.removeAll();
+					contentPanel.revalidate();
+					showExistingFoldersAndFiles();
+				}
 			}
 		});
 		
@@ -344,6 +353,9 @@ public class FolderListing extends JComponent{
 			lbl.setBorder(BorderFactory.createEmptyBorder());
 			lbl.setContentAreaFilled(false);
 			String lblName = "lbl,d," + entry.getKey().toString();
+			if(tempDirEntry.getType() == 'r'){
+				lblName = "lbl,r," + entry.getKey().toString();
+			}
 			lbl.setName(lblName);
 			componentMap.put(lblName, lbl);
 			
@@ -395,6 +407,9 @@ public class FolderListing extends JComponent{
 			txt.setDisabledTextColor(Color.BLACK);
 			txt.setBorder(null);
 			String txtName = "txt,d," + entry.getKey().toString();
+			if(tempDirEntry.getType() == 'r'){
+				txtName = "txt,r," + entry.getKey().toString();
+			}
 			txt.setName(txtName);
 			componentMap.put(txtName, txt);
 			
@@ -471,8 +486,12 @@ public class FolderListing extends JComponent{
 						mainPanel.add(fldrpane);
 					}
 					else if(temp[1].equals("r")){
-						TextEditor txtEdit = new TextEditor(mainFrame);
-						mainPanel.add(txtEdit);
+						int inodeNum = Integer.parseInt(temp[2]);
+						/*Inode tempInode = new Inode(inodeNum);							
+						String fileContent = tempInode.getFileContent();
+						TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
+						mainPanel.add(txtEdit);*/
+						parentDir.editFile(inodeNum);
 					}
 				}
 			}
@@ -547,6 +566,117 @@ public class FolderListing extends JComponent{
 		contentPanel.revalidate();
 	}
 	
+	private void createFile(int count){
+		BufferedImage img = null;
+		JButton lbl;
+		String fileName = "new file " + count;
+		
+		while(getNewFileName(fileName).equals("")){
+			fileName = getNewFileName("new file " + count++);
+		}
+		
+		Inode dirInode = parentDir.makeFile(fileName, "");
+		JTextField txt = new JTextField(fileName);
+		
+		try {
+			img = ImageIO.read(new File("txt_file.gif"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		lbl = new JButton(new ImageIcon(img));
+		lbl.setBorder(BorderFactory.createEmptyBorder());
+		lbl.setContentAreaFilled(false);
+		String lblName = "lbl,r," + dirInode.getInodeNum();
+		lbl.setName(lblName);
+		componentMap.put(lblName, lbl);		
+		lbl.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2){
+					String[] temp = e.getComponent().getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					if(temp[1].equals("d")){
+						FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
+						mainPanel.add(fldrpane);
+					}
+					else if(temp[1].equals("r")){
+						int inodeNum = Integer.parseInt(temp[2]);
+						/*Inode tempInode = new Inode(inodeNum);							
+						String fileContent = tempInode.getFileContent();
+						TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
+						mainPanel.add(txtEdit);*/
+						parentDir.editFile(inodeNum);
+					}
+				}
+			}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					rightClickedLbl = (JButton)e.getComponent();
+					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					rightClickedLbl = (JButton)e.getComponent();
+					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		});		
+		lbl.addFocusListener(new FocusListener() {
+			public void focusLost(FocusEvent e) {
+			}
+			public void focusGained(FocusEvent e) {
+			}
+		});
+		
+		
+		txt.setEnabled(false);
+		txt.setBackground(mainPanel.getBackground());
+		txt.setDisabledTextColor(Color.BLACK);
+		txt.setBorder(null);
+		String txtName = "txt,r," + dirInode.getInodeNum();
+		txt.setName(txtName);
+		componentMap.put(txtName, txt);
+		
+		txt.addMouseListener(new MouseListener() {
+			public void mouseReleased(MouseEvent arg0) {}
+			public void mousePressed(MouseEvent arg0) {}
+			public void mouseExited(MouseEvent e) {
+				e.getComponent().setForeground(Color.BLACK);
+			}
+			public void mouseEntered(MouseEvent arg0) {}
+			public void mouseClicked(MouseEvent e) {
+				e.getComponent().setEnabled(true);
+				e.getComponent().setBackground(mainPanel.getBackground());
+				e.getComponent().setForeground(Color.BLUE);
+			}
+		});
+		txt.addKeyListener(new KeyListener() {
+			public void keyTyped(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {}
+			public void keyPressed(KeyEvent e) {
+				JTextField txt;
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					e.getComponent().setEnabled(false);
+					e.getComponent().setBackground(mainPanel.getBackground());
+					e.getComponent().setForeground(Color.BLACK);
+					
+					txt = (JTextField)e.getSource();
+					
+					String[] temp = txt.getName().split(",");
+					parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());						
+				}
+			}
+		});
+		
+		contentPanel.add(lbl);
+		contentPanel.add(txt);
+		contentPanel.revalidate();
+		
+	}
+	
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
 			return (JComponent) componentMap.get(componentName);
@@ -555,6 +685,19 @@ public class FolderListing extends JComponent{
 	}
 	
 	private String getNewFolderName(String compare){
+		String ret = "";
+		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<Integer, DirEntry> entry = it.next();
+			if(entry.getValue().getName().equals(compare)){
+				return "";
+			}
+		}
+		ret = compare;
+		return ret;
+	}
+	
+	private String getNewFileName(String compare){
 		String ret = "";
 		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
 		while(it.hasNext()){
