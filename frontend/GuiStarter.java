@@ -163,14 +163,28 @@ public class GuiStarter {
 			public void actionPerformed(ActionEvent arg0) {
 			}
 		});
+		
+		JMenuItem item4 = new JMenuItem("Refresh");
+		item4.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				rootDir = null;
+				rootDir = new Directory(rootInoneNum);
+				dirContent = rootDir.getDirContent();
+				contentPanelWest.removeAll();
+				contentPanelWest.revalidate();
+				showExistingFolderAndFiles();
+			}
+		});
+		
 		popupMenu.add(item1);
 		popupMenu.add(item2);
 		popupMenu.add(item3);
+		popupMenu.add(item4);
 		
 		item3.setEnabled(false);
 	}
 	
-	private void addRightClickMenuitems(){		
+	private void addRightClickMenuitems(){
 		JMenuItem item1 = new JMenuItem("Delete");
 		item1.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {}
@@ -238,7 +252,6 @@ public class GuiStarter {
 	}
 	
 	private void showExistingFolderAndFiles() {
-		
 		Iterator<Map.Entry<Integer, DirEntry>> it = dirContent.entrySet().iterator();
 		
 		JTextField txt;

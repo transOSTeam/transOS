@@ -228,9 +228,22 @@ public class FolderListing extends JComponent{
 			public void actionPerformed(ActionEvent arg0) {
 			}
 		});
+		
+		JMenuItem item4 = new JMenuItem("Refresh");
+		item4.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parentDir = null;
+				parentDir = new Directory(parentInodeNum);
+				dirContent = parentDir.getDirContent();
+				contentPanel.removeAll();
+				contentPanel.revalidate();
+				showExistingFoldersAndFiles();
+			}
+		});
 		popupMenu.add(item1);
 		popupMenu.add(item2);
 		popupMenu.add(item3);
+		popupMenu.add(item4);
 		
 		item3.setEnabled(false);
 	}
