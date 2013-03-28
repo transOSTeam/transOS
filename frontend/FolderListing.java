@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -57,6 +58,8 @@ public class FolderListing extends JComponent{
 	private HashMap<Integer, DirEntry> dirContent;
 	private static int count = 0;
 	
+	private Stack<String> s;
+	
 	public FolderListing(JFrame parent,String parentFolderpath,int parentInodeNum){
 		mainPanel = new JPanel();
 		contentPanel = new JPanel();
@@ -71,11 +74,13 @@ public class FolderListing extends JComponent{
 		parentDir = new Directory(parentInodeNum);
 		dirContent = parentDir.getDirContent();
 		
+		s = new Stack<String>();
+		
 		this.parentPath = parentFolderpath;
 		this.parentInodeNum = parentInodeNum;
 		this.mainFrame = parent;
 		
-		dialog = new JDialog(parent, parentFolderpath + "/", false);
+		dialog = new JDialog(parent, getPath(), false);
 		dialog.setLocationRelativeTo(parent);
 		dialog.setBounds(50, 50, 700, 600);		
 		dialog.setVisible(true);
@@ -89,11 +94,19 @@ public class FolderListing extends JComponent{
 		mainPanel.addMouseListener(new MouseListener() {
 			public void mouseReleased(MouseEvent e) {
 				if(e.isPopupTrigger()){
+					if(GuiStarter.copiedInodeNum != 0){
+						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
+						item.setEnabled(true);
+					}
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
 			public void mousePressed(MouseEvent e) {
 				if(e.isPopupTrigger()){
+					if(GuiStarter.copiedInodeNum != 0){
+						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
+						item.setEnabled(true);
+					}
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
@@ -133,10 +146,12 @@ public class FolderListing extends JComponent{
 		parentDir = new Directory(parentInodeNum);
 		dirContent = parentDir.getDirContent();
 		
+		s = new Stack<String>();
+		
 		this.parentPath = parentFolderpath;
 		this.parentInodeNum = parentInodeNum;
 		
-		dialog = new JDialog(parent, parentFolderpath + "/", false);
+		dialog = new JDialog(parent, getPath() , false);
 		dialog.setLocationRelativeTo(parent);
 		dialog.setBounds(50, 50, 700, 600);
 		dialog.setVisible(true);
@@ -150,11 +165,19 @@ public class FolderListing extends JComponent{
 		mainPanel.addMouseListener(new MouseListener() {
 			public void mouseReleased(MouseEvent e) {
 				if(e.isPopupTrigger()){
+					if(GuiStarter.copiedInodeNum != 0){
+						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
+						item.setEnabled(true);
+					}
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
 			public void mousePressed(MouseEvent e) {
 				if(e.isPopupTrigger()){
+					if(GuiStarter.copiedInodeNum != 0){
+						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
+						item.setEnabled(true);
+					}
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
@@ -192,17 +215,27 @@ public class FolderListing extends JComponent{
 				mainPanel.add(txtEdit);
 			}
 		});
-		popupMenu.add(item1);
+		
 		JMenuItem item2 = new JMenuItem("New Folder");
 		item2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				createFolder(count++);
 			}
 		});
+
+		JMenuItem item3  = new JMenuItem("Paste");
+		item3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
+		popupMenu.add(item1);
 		popupMenu.add(item2);
+		popupMenu.add(item3);
+		
+		item3.setEnabled(false);
 	}
 	
-	private void addRightClickMenuitems(){
+	private void addRightClickMenuitems(){		
 		JMenuItem item1 = new JMenuItem("Delete");
 		item1.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {}
@@ -219,7 +252,6 @@ public class FolderListing extends JComponent{
 			public void mouseReleased(MouseEvent e) {
 			}
 		});
-		rightClickMenu.add(item1);
 		
 		JMenuItem item2 = new JMenuItem("Rename");
 		item2.addMouseListener(new MouseListener() {
@@ -235,7 +267,6 @@ public class FolderListing extends JComponent{
 			}
 			public void mouseReleased(MouseEvent e) {}
 		});
-		rightClickMenu.add(item2);
 		
 		JMenuItem item3  = new JMenuItem("Properties");
 		item3.addMouseListener(new MouseListener() {
@@ -250,6 +281,24 @@ public class FolderListing extends JComponent{
 			}
 			public void mouseReleased(MouseEvent e) {}
 		});
+		
+		JMenuItem item4 = new JMenuItem("Copy");
+		item4.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				GuiStarter.copiedInodeNum = Integer.parseInt(temp[2]);
+				GuiStarter.copyFrom = parentInodeNum;
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		
+		rightClickMenu.add(item4);
+		rightClickMenu.add(item1);
+		rightClickMenu.add(item2);
 		rightClickMenu.add(item3);
 	}
 	
@@ -502,6 +551,31 @@ public class FolderListing extends JComponent{
 			}
 		}
 		ret = compare;
+		return ret;
+	}
+	
+	private String getPath(){
+		String ret = "";
+		String[] temp = this.parentPath.split("/");
+		for(int i = 0; i < temp.length; i++){
+			if(temp[i].isEmpty()){
+				s.push("/");
+			}
+			else if(temp[i].equals(".")){}
+			else if(temp[i].equals("..")){
+				if(!s.peek().equals("/")){
+					s.pop();
+				}
+			}
+			else{
+				s.push(temp[i]);
+			}
+		}
+		
+		for (int j = 0;j < s.size();j++){
+			if(s.get(j).equals("/")) ret += s.get(j);
+			else ret += s.get(j) + "/";
+		}
 		return ret;
 	}
 }

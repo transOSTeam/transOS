@@ -56,6 +56,8 @@ public class GuiStarter {
 	private HashMap<Integer, DirEntry> dirContent;
 	private static int count = 0;
 	
+	static int copiedInodeNum = 0;
+	static int copyFrom = 0;
 	
 	public GuiStarter() {
 		mainFrame = new JFrame("Transparent OS");
@@ -95,17 +97,25 @@ public class GuiStarter {
 		mainPanel.addMouseListener(new MouseListener() {
 			public void mouseReleased(MouseEvent e) {
 				if(e.isPopupTrigger()){
+					if(GuiStarter.copiedInodeNum != 0){
+						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
+						item.setEnabled(true);
+					}
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
 			public void mousePressed(MouseEvent e) {
 				if(e.isPopupTrigger()){
+					if(GuiStarter.copiedInodeNum != 0){
+						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
+						item.setEnabled(true);
+					}
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
 			public void mouseExited(MouseEvent arg0) {}
 			public void mouseEntered(MouseEvent arg0) {}
-			public void mouseClicked(MouseEvent arg0) {}
+			public void mouseClicked(MouseEvent e) {}
 		});
 		addMenuItems();
 		addPopupMenuItems();
@@ -140,17 +150,27 @@ public class GuiStarter {
 				mainPanel.add(txtEdit);
 			}
 		});
-		popupMenu.add(item1);
+		
 		JMenuItem item2 = new JMenuItem("New Folder");
 		item2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				createFolder(count++);
 			}
 		});
+		
+		JMenuItem item3  = new JMenuItem("Paste");
+		item3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
+		popupMenu.add(item1);
 		popupMenu.add(item2);
+		popupMenu.add(item3);
+		
+		item3.setEnabled(false);
 	}
 	
-	private void addRightClickMenuitems(){
+	private void addRightClickMenuitems(){		
 		JMenuItem item1 = new JMenuItem("Delete");
 		item1.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {}
@@ -167,7 +187,6 @@ public class GuiStarter {
 			public void mouseReleased(MouseEvent e) {
 			}
 		});
-		rightClickMenu.add(item1);
 		
 		JMenuItem item2 = new JMenuItem("Rename");
 		item2.addMouseListener(new MouseListener() {
@@ -183,7 +202,6 @@ public class GuiStarter {
 			}
 			public void mouseReleased(MouseEvent e) {}
 		});
-		rightClickMenu.add(item2);
 		
 		JMenuItem item3  = new JMenuItem("Properties");
 		item3.addMouseListener(new MouseListener() {
@@ -198,6 +216,24 @@ public class GuiStarter {
 			}
 			public void mouseReleased(MouseEvent e) {}
 		});
+		
+		JMenuItem item4 = new JMenuItem("Copy");
+		item4.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				GuiStarter.copiedInodeNum = Integer.parseInt(temp[2]);
+				GuiStarter.copyFrom = 2;
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		
+		rightClickMenu.add(item4);
+		rightClickMenu.add(item1);
+		rightClickMenu.add(item2);
 		rightClickMenu.add(item3);
 	}
 	
