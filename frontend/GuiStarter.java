@@ -254,6 +254,20 @@ public class GuiStarter {
 			}
 		});
 		
+		JMenuItem item5 = new JMenuItem("Cut");
+		item5.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				GuiStarter.copiedInodeNum = Integer.parseInt(temp[2]);
+				GuiStarter.copyFrom = 2;
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		
 		rightClickMenu.add(item4);
 		rightClickMenu.add(item1);
 		rightClickMenu.add(item2);
