@@ -190,10 +190,10 @@ public class Inode {
 		while(noOfBlocksReq > 0 && blockPointerIndex < 4) {
 			int tempBlockNo = FreeSpaceMgnt.getBlockNo();		//get block no..delete file..create file..create block then write
 			File tempBlockFile = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
-			tempBlockFile.delete();
-			File tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+			if(tempBlockFile.exists())
+				tempBlockFile.delete();
 			try {
-				tempBlockFile1.createNewFile();
+				tempBlockFile.createNewFile();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -218,10 +218,10 @@ public class Inode {
 		if(noOfBlocksReq > 0) {
 			int tempBlockNo = FreeSpaceMgnt.getBlockNo();
 			File tempBlockFile = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
-			tempBlockFile.delete();
-			File tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+			if(tempBlockFile.exists())
+				tempBlockFile.delete();
 			try {
-				tempBlockFile1.createNewFile();
+				tempBlockFile.createNewFile();
 			} catch (IOException e2) {
 				e2.printStackTrace();
 			}
@@ -240,9 +240,9 @@ public class Inode {
 			int seekSize = 6;			// 5 + 1\n
 			while(noOfBlocksReq > 0) {
 				tempBlockNo = FreeSpaceMgnt.getBlockNo();
-				tempBlockFile = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
-				tempBlockFile.delete();
-				tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+				File tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+				if(tempBlockFile1.exists())
+					tempBlockFile1.delete();
 				try {
 					tempBlockFile1.createNewFile();
 				} catch (IOException e1) {
