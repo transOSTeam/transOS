@@ -370,8 +370,12 @@ public class FolderListing extends JComponent{
 							mainPanel.add(fldrpane);
 						}
 						else if(temp[1].equals("r")){
-							TextEditor txtEdit = new TextEditor(mainFrame);
-							mainPanel.add(txtEdit);
+							int inodeNum = Integer.parseInt(temp[2]);
+							/*Inode tempInode = new Inode(inodeNum);							
+							String fileContent = tempInode.getFileContent();
+							TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
+							mainPanel.add(txtEdit);*/
+							parentDir.editFile(inodeNum);
 						}
 					}
 				}
