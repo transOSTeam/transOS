@@ -1,21 +1,11 @@
 package backend.disk;
 
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,7 +17,6 @@ import java.util.Map.Entry;
 
 
 public class Directory {
-	private static int tempNo;
 	private int inodeNum;
 	//private int parentInodeNum;
 	private HashMap<Integer, DirEntry> dirContent;  
@@ -138,10 +127,10 @@ public class Directory {
 		targetDir.dirContent.put(targetInode.getInodeNum(), tempDirEntry);
 		targetDir.writeToDisk();
 	}
-	public void move(int scrFileInode, int targetDirInode) {	//just cut the entry from source to target directory
-		DirEntry victimEntry = this.dirContent.remove(scrFileInode);
+	public void move(int srcFileInode, int targetDirInode) {	//just cut the entry from source to target directory
+		DirEntry victimEntry = this.dirContent.remove(srcFileInode);
 		Directory targetDir = new Directory(targetDirInode);
-		targetDir.dirContent.put(scrFileInode, victimEntry);
+		targetDir.dirContent.put(srcFileInode, victimEntry);
 		
 		this.writeToDisk();
 		targetDir.writeToDisk();
@@ -153,48 +142,11 @@ public class Directory {
 			File tempFile = null;
 			String content = fileInode.getFileContent();
 			try {
-				String tempNoS = ""+tempNo;
-				tempFile = new File(Disk.homeDir.toString() + "/transOStempFile" + tempNoS);
-				tempNo++;
+				tempFile = new File(Disk.tmpFolder.toString() + "/" + fileInodeNum + ".txt");
 				tempFile.deleteOnExit();
 				RandomAccessFile tempRF = new RandomAccessFile(tempFile, "rw");
 				tempRF.writeBytes(content);
 				Desktop.getDesktop().open(tempFile);
-				//do stuff here...copy back to inode.writeContent();
-				tempRF.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			final FileSystem fs = FileSystems.getDefault();
-			try {
-				WatchService ws = fs.newWatchService();
-				Path pth = Paths.get(tempFile.getAbsoluteFile().getParentFile().getAbsolutePath());
-				pth.register(ws, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-				boolean loop = true;
-				WatchKey wk = null;
-				do {
-					try {
-						wk = ws.take();
-						for(WatchEvent<?> event : wk.pollEvents()) {
-							WatchEvent.Kind<?> kind = event.kind();
-							Path eventPath = (Path) event.context();
-							System.out.println(eventPath.getFileName() + "->" + kind.toString());
-							if(eventPath.getFileName().toString().compareTo(tempFile.getName()) == 0) {
-								loop = false;
-							}
-							wk.reset();
-						}
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				} while(loop);
-				RandomAccessFile tempRF = new RandomAccessFile(tempFile, "r");
-				String newContent = "", buffer;
-				while((buffer = tempRF.readLine()) != null) {
-					newContent += buffer;
-				}
-				fileInode.writeContent(newContent);
-				fileInode.writeToDisk();
 				tempRF.close();
 			} catch (IOException e) {
 				e.printStackTrace();

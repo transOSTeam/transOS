@@ -12,6 +12,7 @@ public class Disk {
 	
 	public static final File homeDir = new File(System.getProperty("user.home"));	
 	public static final File transDisk = new File(homeDir.toString() + "/TransDisk");
+	public static final File tmpFolder = new File(homeDir.toString() + "/TransOSTemp");
 	
 	public static final int maxBlockSize = 500;											// in B
 	public static final int diskSize = 1;												// in MB
@@ -173,6 +174,10 @@ public class Disk {
 	}
 
 	public static void bootUp() {
+		//create temp space
+		if(!tmpFolder.exists())
+			tmpFolder.mkdir();
+		tmpFolder.deleteOnExit();
 		FreeSpaceMgnt.init();		//part of boot-up
 	}
 	

@@ -24,7 +24,7 @@ public class Block extends RandomAccessFile{
 		String content = "", buffer;
 		try {
 			while((buffer = this.readLine()) != null) {
-				content += buffer;
+				content += buffer + "\n";
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
