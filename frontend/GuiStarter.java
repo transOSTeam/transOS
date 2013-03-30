@@ -2,6 +2,7 @@ package frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -31,6 +33,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 import backend.disk.DirEntry;
 import backend.disk.Directory;
@@ -51,11 +54,13 @@ public class GuiStarter {
 	JButton rightClickedLbl;
 
 	private Map<String, JComponent> componentMap;
+	private Map<String, JPanel> colPanelMap;
 	private static int rootInodeNum = 2;// get root inode number
 	private Directory rootDir;
 	private HashMap<Integer, DirEntry> dirContent;
-	private static int count = 0;
-	private static int count1 = 0;
+	private int count = 0;
+	private int count1 = 0;
+	private int pnlCount;
 	
 	static int copiedInodeNum = 0;
 	static int copyFrom = 0;
@@ -73,6 +78,8 @@ public class GuiStarter {
 		rightClickMenu = new JPopupMenu();
 		
 		componentMap = new HashMap<String, JComponent>();
+		colPanelMap = new HashMap<String, JPanel>();
+		pnlCount = 0;
 		rootDir = new Directory(rootInodeNum);
 		dirContent = rootDir.getDirContent();
 		
@@ -203,8 +210,11 @@ public class GuiStarter {
 				String[] temp = rightClickedLbl.getName().split(",");
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				rootDir.deleteFile(Integer.parseInt(temp[2]));
-				contentPanelWest.remove(rightClickedLbl);
-				contentPanelWest.remove(tempTxt);
+				JPanel pnl = (JPanel)rightClickedLbl.getParent();
+				pnl.remove(rightClickedLbl);
+				pnl.remove(tempTxt);
+				JPanel colPan = (JPanel)pnl.getParent();
+				colPan.remove(pnl);
 				contentPanelWest.revalidate();
 			}
 			public void mouseReleased(MouseEvent e) {
@@ -261,6 +271,9 @@ public class GuiStarter {
 			public void mouseExited(MouseEvent e) {}
 			public void mousePressed(MouseEvent e) {
 				String[] temp = rightClickedLbl.getName().split(",");
+				rightClickedLbl.setIcon(new ImageIcon("folder_light.gif"));
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(Color.LIGHT_GRAY);
 				GuiStarter.copiedInodeNum = Integer.parseInt(temp[2]);
 				GuiStarter.copyFrom = 2;
 			}
@@ -269,6 +282,7 @@ public class GuiStarter {
 		});
 		
 		rightClickMenu.add(item4);
+		rightClickMenu.add(item5);
 		rightClickMenu.add(item1);
 		rightClickMenu.add(item2);
 		rightClickMenu.add(item3);
@@ -280,7 +294,18 @@ public class GuiStarter {
 		JTextField txt;
 		BufferedImage img = null;
 		JButton lbl;
+		JPanel pnl = null;
+		JPanel columnPanel = null;
+		columnPanel = new JPanel();
+		columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+		columnPanel.setName("col" + pnlCount);
+		colPanelMap.put("col" + pnlCount, columnPanel);
 		while(it.hasNext()){
+			
+			pnl = new JPanel();
+			pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
+			pnl.setBorder(new EmptyBorder(10,10,10,10));
+			
 			Map.Entry<Integer, DirEntry> entry = it.next();
 			
 			DirEntry tempDirEntry = entry.getValue();
@@ -307,6 +332,7 @@ public class GuiStarter {
 				lblName = "lbl,r," + entry.getKey().toString();
 			}
 			lbl.setName(lblName);
+			lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			componentMap.put(lblName, lbl);
 			
 			lbl.addMouseListener(new MouseListener() {
@@ -345,8 +371,20 @@ public class GuiStarter {
 			});
 			lbl.addFocusListener(new FocusListener() {
 				public void focusLost(FocusEvent e) {
+					JButton tempLbl = (JButton)e.getSource();
+					JPanel tempPanel = (JPanel) tempLbl.getParent();
+					tempPanel.setBackground(null);
+					String[] temp = tempLbl.getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					tempTxt.setBackground(null);
 				}
 				public void focusGained(FocusEvent e) {
+					JButton tempLbl = (JButton)e.getSource();
+					JPanel tempPanel = (JPanel) tempLbl.getParent();
+					tempPanel.setBackground(Color.LIGHT_GRAY);
+					String[] temp = tempLbl.getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					tempTxt.setBackground(Color.LIGHT_GRAY);
 				}
 			});
 			
@@ -360,6 +398,7 @@ public class GuiStarter {
 				txtName = "txt,r," + entry.getKey().toString();
 			}
 			txt.setName(txtName);
+			txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 			componentMap.put(txtName, txt);
 			
 			txt.addMouseListener(new MouseListener() {
@@ -393,10 +432,18 @@ public class GuiStarter {
 				}
 			});
 			
-			contentPanelWest.add(lbl);
-			contentPanelWest.add(txt);
+			pnl.add(lbl);
+			pnl.add(txt);
+			columnPanel.add(pnl);
+			contentPanelWest.add(columnPanel);
 			contentPanelWest.revalidate();
-			
+			if(columnPanel.getComponentCount() == 9){
+				columnPanel = new JPanel();
+				columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+				pnlCount++;
+				columnPanel.setName("col" + pnlCount);
+				colPanelMap.put("col" + pnlCount, columnPanel);
+			}
 		}
 	}
 	
@@ -404,6 +451,20 @@ public class GuiStarter {
 		BufferedImage img = null;
 		JButton lbl;
 		String folderName = "new folder " + count;
+		
+		JPanel columnPanel = getPanelByName("col" + pnlCount);
+		if(columnPanel.getComponentCount() == 9){
+			columnPanel = new JPanel();
+			columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+			pnlCount++;
+			columnPanel.setName("col" + pnlCount);
+			colPanelMap.put("col" + pnlCount, columnPanel);
+		}
+		
+		JPanel pnl = null;
+		pnl = new JPanel();
+		pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
+		pnl.setBorder(new EmptyBorder(10,10,10,10));
 		
 		while(getNewFolderName(folderName).equals("")){
 			folderName = getNewFolderName("new folder " + count++);
@@ -423,6 +484,7 @@ public class GuiStarter {
 		lbl.setContentAreaFilled(false);
 		String lblName = "lbl,d," + dirInode.getInodeNum();
 		lbl.setName(lblName);
+		lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(lblName, lbl);		
 		lbl.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
@@ -456,8 +518,20 @@ public class GuiStarter {
 		});		
 		lbl.addFocusListener(new FocusListener() {
 			public void focusLost(FocusEvent e) {
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(null);
+				String[] temp = tempLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(null);
 			}
 			public void focusGained(FocusEvent e) {
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(Color.LIGHT_GRAY);
+				String[] temp = tempLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(Color.LIGHT_GRAY);
 			}
 		});
 		
@@ -468,6 +542,7 @@ public class GuiStarter {
 		txt.setBorder(null);
 		String txtName = "txt,d," + dirInode.getInodeNum();
 		txt.setName(txtName);
+		txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(txtName, txt);
 		
 		txt.addMouseListener(new MouseListener() {
@@ -501,17 +576,32 @@ public class GuiStarter {
 			}
 		});
 		
-		contentPanelWest.add(lbl);
-		contentPanelWest.add(txt);
+		pnl.add(lbl);
+		pnl.add(txt);
+		columnPanel.add(pnl);
+		contentPanelWest.add(columnPanel);
 		contentPanelWest.revalidate();
 		
 	}
 	
 	private void createFile(int count){
-		//change
 		BufferedImage img = null;
 		JButton lbl;
 		String fileName = "new file " + count;
+		
+		JPanel columnPanel = getPanelByName("col" + pnlCount);
+		if(columnPanel.getComponentCount() == 9){
+			columnPanel = new JPanel();
+			columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+			pnlCount++;
+			columnPanel.setName("col" + pnlCount);
+			colPanelMap.put("col" + pnlCount, columnPanel);
+		}
+		
+		JPanel pnl = null;
+		pnl = new JPanel();
+		pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
+		pnl.setBorder(new EmptyBorder(10,10,10,10));
 		
 		while(getNewFileName(fileName).equals("")){
 			fileName = getNewFileName("new file " + count++);
@@ -531,6 +621,7 @@ public class GuiStarter {
 		lbl.setContentAreaFilled(false);
 		String lblName = "lbl,r," + dirInode.getInodeNum();
 		lbl.setName(lblName);
+		lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(lblName, lbl);		
 		lbl.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
@@ -568,8 +659,20 @@ public class GuiStarter {
 		});		
 		lbl.addFocusListener(new FocusListener() {
 			public void focusLost(FocusEvent e) {
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(null);
+				String[] temp = tempLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(null);
 			}
 			public void focusGained(FocusEvent e) {
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(Color.LIGHT_GRAY);
+				String[] temp = tempLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(Color.LIGHT_GRAY);
 			}
 		});
 		
@@ -580,6 +683,7 @@ public class GuiStarter {
 		txt.setBorder(null);
 		String txtName = "txt,r," + dirInode.getInodeNum();
 		txt.setName(txtName);
+		txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(txtName, txt);
 		
 		txt.addMouseListener(new MouseListener() {
@@ -613,8 +717,10 @@ public class GuiStarter {
 			}
 		});
 		
-		contentPanelWest.add(lbl);
-		contentPanelWest.add(txt);
+		pnl.add(lbl);
+		pnl.add(txt);
+		columnPanel.add(pnl);
+		contentPanelWest.add(columnPanel);
 		contentPanelWest.revalidate();
 		
 	}
@@ -622,6 +728,13 @@ public class GuiStarter {
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
 			return (JComponent) componentMap.get(componentName);
+		}
+		else return null;
+	}
+	
+	private JPanel getPanelByName(String componentName){
+		if(colPanelMap.containsKey(componentName)){
+			return (JPanel) colPanelMap.get(componentName);
 		}
 		else return null;
 	}
