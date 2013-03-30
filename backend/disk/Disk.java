@@ -183,5 +183,7 @@ public class Disk {
 	
 	public static void shutDown() {
 		FreeSpaceMgnt.shutDown();
+		if(tmpFolder.exists())
+			tmpFolder.delete();
 	}
 }
