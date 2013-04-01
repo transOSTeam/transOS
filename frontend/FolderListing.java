@@ -2,7 +2,7 @@ package frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -21,6 +21,7 @@ import java.util.Stack;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -31,6 +32,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 import backend.disk.DirEntry;
 import backend.disk.Directory;
@@ -45,19 +47,19 @@ public class FolderListing extends JComponent{
 	JPanel contentPanel;
 	JPanel contentPanelSouth;
 	JMenu menuBar;
-	JButton openBtn;
-	JTextField selectedFolder;
 	String parentPath;
 	int parentInodeNum;
 	JPopupMenu popupMenu;
 	JPopupMenu rightClickMenu;
 	JButton rightClickedLbl;
 	
-	private HashMap<String, JComponent> componentMap;
+	private Map<String, JComponent> componentMap;
+	private Map<String, JPanel> colPanelMap;
 	private Directory parentDir;
 	private HashMap<Integer, DirEntry> dirContent;
-	private static int count = 0;
-	private static int count1 = 0;
+	private int count = 0;
+	private int count1 = 0;
+	private int pnlCount;
 	
 	private Stack<String> s;
 	
@@ -66,12 +68,12 @@ public class FolderListing extends JComponent{
 		contentPanel = new JPanel();
 		contentPanelSouth = new JPanel();
 		menuBar = new JMenu();
-		openBtn = new JButton("Open");
-		selectedFolder = new JTextField("");
 		popupMenu = new JPopupMenu();
 		rightClickMenu = new JPopupMenu();
 		
 		componentMap = new HashMap<String, JComponent>();
+		colPanelMap = new HashMap<String, JPanel>();
+		pnlCount = 0;
 		parentDir = new Directory(parentInodeNum);
 		dirContent = parentDir.getDirContent();
 		
@@ -85,8 +87,6 @@ public class FolderListing extends JComponent{
 		dialog.setLocationRelativeTo(parent);
 		dialog.setBounds(50, 50, 700, 600);		
 		dialog.setVisible(true);
-		
-		selectedFolder.setPreferredSize(new Dimension(250, 30));
 		
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(menuBar,BorderLayout.NORTH);
@@ -114,15 +114,6 @@ public class FolderListing extends JComponent{
 			public void mouseExited(MouseEvent arg0) {}
 			public void mouseEntered(MouseEvent arg0) {}
 			public void mouseClicked(MouseEvent arg0) {}
-		});
-		
-		contentPanelSouth.add(selectedFolder);
-		contentPanelSouth.add(openBtn);
-		
-		openBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				System.out.println(selectedFolder.getText());
-			}
 		});
 		
 		dialog.add(mainPanel);
@@ -138,12 +129,12 @@ public class FolderListing extends JComponent{
 		contentPanel = new JPanel();
 		contentPanelSouth = new JPanel();
 		menuBar = new JMenu();
-		openBtn = new JButton("Open");
-		selectedFolder = new JTextField("");
 		popupMenu = new JPopupMenu();
 		rightClickMenu = new JPopupMenu();
 		
 		componentMap = new HashMap<String, JComponent>();
+		colPanelMap = new HashMap<String, JPanel>();
+		pnlCount = 0;
 		parentDir = new Directory(parentInodeNum);
 		dirContent = parentDir.getDirContent();
 		
@@ -157,7 +148,6 @@ public class FolderListing extends JComponent{
 		dialog.setBounds(50, 50, 700, 600);
 		dialog.setVisible(true);
 		
-		selectedFolder.setPreferredSize(new Dimension(250, 30));
 		
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(menuBar,BorderLayout.NORTH);
@@ -185,15 +175,6 @@ public class FolderListing extends JComponent{
 			public void mouseExited(MouseEvent arg0) {}
 			public void mouseEntered(MouseEvent arg0) {}
 			public void mouseClicked(MouseEvent arg0) {}
-		});
-		
-		contentPanelSouth.add(selectedFolder);
-		contentPanelSouth.add(openBtn);
-		
-		openBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				System.out.println(selectedFolder.getText());
-			}
 		});
 		
 		dialog.add(mainPanel);
@@ -267,8 +248,11 @@ public class FolderListing extends JComponent{
 				String[] temp = rightClickedLbl.getName().split(",");
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				parentDir.deleteFile(Integer.parseInt(temp[2]));
-				contentPanel.remove(rightClickedLbl);
-				contentPanel.remove(tempTxt);
+				JPanel pnl = (JPanel)rightClickedLbl.getParent();
+				pnl.remove(rightClickedLbl);
+				pnl.remove(tempTxt);
+				JPanel colPan = (JPanel)pnl.getParent();
+				colPan.remove(pnl);
 				contentPanel.revalidate();
 			}
 			public void mouseReleased(MouseEvent e) {
@@ -330,7 +314,18 @@ public class FolderListing extends JComponent{
 		JTextField txt;
 		BufferedImage img = null;
 		JButton lbl;
+		JPanel pnl = null;
+		JPanel columnPanel = null;
+		columnPanel = new JPanel();
+		columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+		columnPanel.setName("col" + pnlCount);
+		colPanelMap.put("col" + pnlCount, columnPanel);
 		while(it.hasNext()){
+			
+			pnl = new JPanel();
+			pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
+			pnl.setBorder(new EmptyBorder(10,10,10,10));
+			
 			Map.Entry<Integer, DirEntry> entry = it.next();
 			
 			DirEntry tempDirEntry = entry.getValue();
@@ -357,6 +352,7 @@ public class FolderListing extends JComponent{
 				lblName = "lbl,r," + entry.getKey().toString();
 			}
 			lbl.setName(lblName);
+			lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			componentMap.put(lblName, lbl);
 			
 			lbl.addMouseListener(new MouseListener() {
@@ -396,12 +392,20 @@ public class FolderListing extends JComponent{
 			});
 			lbl.addFocusListener(new FocusListener() {
 				public void focusLost(FocusEvent e) {
-					selectedFolder.setText("");
+					JButton tempLbl = (JButton)e.getSource();
+					JPanel tempPanel = (JPanel) tempLbl.getParent();
+					tempPanel.setBackground(null);
+					String[] temp = tempLbl.getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					tempTxt.setBackground(null);
 				}
 				public void focusGained(FocusEvent e) {
-					String[] temp = e.getComponent().getName().split(",");
+					JButton tempLbl = (JButton)e.getSource();
+					JPanel tempPanel = (JPanel) tempLbl.getParent();
+					tempPanel.setBackground(Color.LIGHT_GRAY);
+					String[] temp = tempLbl.getName().split(",");
 					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-					selectedFolder.setText(tempTxt.getText());
+					tempTxt.setBackground(Color.LIGHT_GRAY);
 				}
 			});
 			
@@ -415,6 +419,7 @@ public class FolderListing extends JComponent{
 				txtName = "txt,r," + entry.getKey().toString();
 			}
 			txt.setName(txtName);
+			txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 			componentMap.put(txtName, txt);
 			
 			txt.addMouseListener(new MouseListener() {
@@ -448,9 +453,18 @@ public class FolderListing extends JComponent{
 				}
 			});
 			
-			contentPanel.add(lbl);
-			contentPanel.add(txt);
+			pnl.add(lbl);
+			pnl.add(txt);
+			columnPanel.add(pnl);
+			contentPanel.add(columnPanel);
 			contentPanel.revalidate();
+			if(columnPanel.getComponentCount() == 6){
+				columnPanel = new JPanel();
+				columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+				pnlCount++;
+				columnPanel.setName("col" + pnlCount);
+				colPanelMap.put("col" + pnlCount, columnPanel);
+			}
 		}
 	}
 	
@@ -458,6 +472,20 @@ public class FolderListing extends JComponent{
 		BufferedImage img = null;
 		JButton lbl;
 		String folderName = "new folder " + count;
+		
+		JPanel columnPanel = getPanelByName("col" + pnlCount);
+		if(columnPanel.getComponentCount() == 6){
+			columnPanel = new JPanel();
+			columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+			pnlCount++;
+			columnPanel.setName("col" + pnlCount);
+			colPanelMap.put("col" + pnlCount, columnPanel);
+		}
+		
+		JPanel pnl = null;
+		pnl = new JPanel();
+		pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
+		pnl.setBorder(new EmptyBorder(10,10,10,10));
 		
 		while(getNewFolderName(folderName).equals("")){
 			folderName = getNewFolderName("new folder " + count++);
@@ -477,6 +505,7 @@ public class FolderListing extends JComponent{
 		lbl.setContentAreaFilled(false);
 		String lblName = "lbl,d," + dirInode.getInodeNum();
 		lbl.setName(lblName);
+		lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(lblName, lbl);
 		
 		lbl.addMouseListener(new MouseListener() {
@@ -517,12 +546,20 @@ public class FolderListing extends JComponent{
 		
 		lbl.addFocusListener(new FocusListener() {
 			public void focusLost(FocusEvent e) {
-				selectedFolder.setText("");
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(null);
+				String[] temp = tempLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(null);
 			}
 			public void focusGained(FocusEvent e) {
-				String[] temp = e.getComponent().getName().split(",");
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(Color.LIGHT_GRAY);
+				String[] temp = tempLbl.getName().split(",");
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-				selectedFolder.setText(tempTxt.getText());
+				tempTxt.setBackground(Color.LIGHT_GRAY);
 			}
 		});
 		
@@ -532,6 +569,7 @@ public class FolderListing extends JComponent{
 		txt.setBorder(null);
 		String txtName = "txt,d," + dirInode.getInodeNum();
 		txt.setName(txtName);
+		txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(txtName, txt);
 		
 		txt.addMouseListener(new MouseListener() {
@@ -565,8 +603,10 @@ public class FolderListing extends JComponent{
 			}
 		});	
 		
-		contentPanel.add(lbl);
-		contentPanel.add(txt);
+		pnl.add(lbl);
+		pnl.add(txt);
+		columnPanel.add(pnl);
+		contentPanel.add(columnPanel);
 		contentPanel.revalidate();
 	}
 	
@@ -574,6 +614,20 @@ public class FolderListing extends JComponent{
 		BufferedImage img = null;
 		JButton lbl;
 		String fileName = "new file " + count;
+		
+		JPanel columnPanel = getPanelByName("col" + pnlCount);
+		if(columnPanel.getComponentCount() == 6){
+			columnPanel = new JPanel();
+			columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+			pnlCount++;
+			columnPanel.setName("col" + pnlCount);
+			colPanelMap.put("col" + pnlCount, columnPanel);
+		}
+		
+		JPanel pnl = null;
+		pnl = new JPanel();
+		pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
+		pnl.setBorder(new EmptyBorder(10,10,10,10));
 		
 		while(getNewFileName(fileName).equals("")){
 			fileName = getNewFileName("new file " + count++);
@@ -593,6 +647,7 @@ public class FolderListing extends JComponent{
 		lbl.setContentAreaFilled(false);
 		String lblName = "lbl,r," + dirInode.getInodeNum();
 		lbl.setName(lblName);
+		lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(lblName, lbl);		
 		lbl.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
@@ -630,8 +685,20 @@ public class FolderListing extends JComponent{
 		});		
 		lbl.addFocusListener(new FocusListener() {
 			public void focusLost(FocusEvent e) {
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(null);
+				String[] temp = tempLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(null);
 			}
 			public void focusGained(FocusEvent e) {
+				JButton tempLbl = (JButton)e.getSource();
+				JPanel tempPanel = (JPanel) tempLbl.getParent();
+				tempPanel.setBackground(Color.LIGHT_GRAY);
+				String[] temp = tempLbl.getName().split(",");
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(Color.LIGHT_GRAY);
 			}
 		});
 		
@@ -642,6 +709,7 @@ public class FolderListing extends JComponent{
 		txt.setBorder(null);
 		String txtName = "txt,r," + dirInode.getInodeNum();
 		txt.setName(txtName);
+		txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(txtName, txt);
 		
 		txt.addMouseListener(new MouseListener() {
@@ -675,8 +743,10 @@ public class FolderListing extends JComponent{
 			}
 		});
 		
-		contentPanel.add(lbl);
-		contentPanel.add(txt);
+		pnl.add(lbl);
+		pnl.add(txt);
+		columnPanel.add(pnl);
+		contentPanel.add(columnPanel);
 		contentPanel.revalidate();
 		
 	}
@@ -684,6 +754,13 @@ public class FolderListing extends JComponent{
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
 			return (JComponent) componentMap.get(componentName);
+		}
+		else return null;
+	}
+	
+	private JPanel getPanelByName(String componentName){
+		if(colPanelMap.containsKey(componentName)){
+			return (JPanel) colPanelMap.get(componentName);
 		}
 		else return null;
 	}
