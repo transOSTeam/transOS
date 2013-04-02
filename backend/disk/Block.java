@@ -29,6 +29,6 @@ public class Block extends RandomAccessFile{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return content;
+		return content.trim();
 	}
 }

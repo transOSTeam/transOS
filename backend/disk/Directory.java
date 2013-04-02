@@ -59,6 +59,7 @@ public class Directory {
 	}
 	
 	public void deleteFile(int victimInodeNo) {
+		System.out.println("in del");
 		Inode victimInode = new Inode(victimInodeNo);
 		if(victimInode.getFileType() == 'd') {
 			Directory victimDir = new Directory(victimInodeNo);

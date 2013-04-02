@@ -46,7 +46,8 @@ public class FreeSpaceMgnt {
 		if(victims[4] != 0) {		//indirect block pointer
 			try {
 				Block indirectPointerBlk = new Block(victims[4], "rw");
-				for(String ip = indirectPointerBlk.readLine(); ip != null; ) {
+				String ip;
+				while(( ip = indirectPointerBlk.readLine()) != null ) {
 					int tempBlkNo = Integer.parseInt(ip);
 					FreeSpaceMgnt.consumeBlock(tempBlkNo);
 				}
