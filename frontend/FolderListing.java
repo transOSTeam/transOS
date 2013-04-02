@@ -208,7 +208,7 @@ public class FolderListing extends JComponent{
 		item3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(GuiStarter.copyFrom != parentInodeNum){
-					parentDir.copy(GuiStarter.copiedInodeNum, parentInodeNum);
+					parentDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
 					parentDir = null;
 					parentDir = new Directory(parentInodeNum);
 					dirContent = parentDir.getDirContent();

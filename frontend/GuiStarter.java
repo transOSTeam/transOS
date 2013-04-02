@@ -170,7 +170,7 @@ public class GuiStarter {
 		item3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(GuiStarter.copyFrom != rootInodeNum){
-					rootDir.copy(copiedInodeNum, rootInodeNum);
+					rootDir.copy(copiedInodeNum, copyFrom);
 					rootDir = null;
 					rootDir = new Directory(rootInodeNum);
 					dirContent = rootDir.getDirContent();
