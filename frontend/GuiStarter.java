@@ -26,6 +26,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -495,8 +496,9 @@ public class GuiStarter {
 						FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
 						mainPanel.add(fldrpane);
 					}
-					else if(temp[1].equals("d")){
-						//mainPanel.add(txtEdit);
+					else if(temp[1].equals("r")){
+						int inodeNum = Integer.parseInt(temp[2]);
+						rootDir.editFile(inodeNum);
 					}
 				}
 			}
