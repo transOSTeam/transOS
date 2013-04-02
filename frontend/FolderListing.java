@@ -208,7 +208,12 @@ public class FolderListing extends JComponent{
 		item3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(GuiStarter.copyFrom != parentInodeNum){
-					parentDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+					if(GuiStarter.cutInodeNum == GuiStarter.copiedInodeNum){
+						parentDir.move(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+					}
+					else{
+						parentDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+					}
 					parentDir = null;
 					parentDir = new Directory(parentInodeNum);
 					dirContent = parentDir.getDirContent();
@@ -302,7 +307,26 @@ public class FolderListing extends JComponent{
 			}
 		});
 		
+		JMenuItem item5 = new JMenuItem("Cut");
+		item5.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				String[] temp = rightClickedLbl.getName().split(",");
+				rightClickedLbl.setIcon(new ImageIcon("folder_light.gif"));
+				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+				tempTxt.setBackground(Color.LIGHT_GRAY);
+				GuiStarter.copiedInodeNum = Integer.parseInt(temp[2]);
+				GuiStarter.cutInodeNum = Integer.parseInt(temp[2]);
+				GuiStarter.copyFrom = parentInodeNum;
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		
 		rightClickMenu.add(item4);
+		rightClickMenu.add(item5);
 		rightClickMenu.add(item1);
 		rightClickMenu.add(item2);
 		rightClickMenu.add(item3);

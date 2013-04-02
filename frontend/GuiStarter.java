@@ -65,7 +65,7 @@ public class GuiStarter {
 	
 	static int copiedInodeNum = 0;
 	static int copyFrom = 0;
-	
+	static int cutInodeNum = 0;	
 	public GuiStarter() {
 		mainFrame = new JFrame("Transparent OS");
 		mainPanel = new JPanel();
@@ -170,7 +170,12 @@ public class GuiStarter {
 		item3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(GuiStarter.copyFrom != rootInodeNum){
-					rootDir.copy(copiedInodeNum, copyFrom);
+					if(cutInodeNum == copiedInodeNum){
+						rootDir.move(copiedInodeNum, copyFrom);
+					}
+					else{
+						rootDir.copy(copiedInodeNum, copyFrom);
+					}
 					rootDir = null;
 					rootDir = new Directory(rootInodeNum);
 					dirContent = rootDir.getDirContent();
@@ -276,6 +281,7 @@ public class GuiStarter {
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				tempTxt.setBackground(Color.LIGHT_GRAY);
 				GuiStarter.copiedInodeNum = Integer.parseInt(temp[2]);
+				GuiStarter.cutInodeNum = Integer.parseInt(temp[2]);
 				GuiStarter.copyFrom = 2;
 			}
 			public void mouseReleased(MouseEvent e) {
