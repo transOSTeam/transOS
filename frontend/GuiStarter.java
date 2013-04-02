@@ -496,8 +496,7 @@ public class GuiStarter {
 						mainPanel.add(fldrpane);
 					}
 					else if(temp[1].equals("d")){
-						TextEditor txtEdit = new TextEditor(mainFrame);
-						mainPanel.add(txtEdit);
+						//mainPanel.add(txtEdit);
 					}
 				}
 			}
