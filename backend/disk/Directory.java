@@ -118,22 +118,31 @@ public class Directory {
 		this.writeToDisk();
 	}
 	
-	public void copy(int srcFileInode, int targetDirInode) {
-		Inode victimInode = new Inode(srcFileInode);
-		Inode targetInode = new Inode(victimInode);
-		DirEntry victimEntry = this.dirContent.get(srcFileInode);
-		Directory targetDir = new Directory(targetDirInode);
-		DirEntry tempDirEntry = new DirEntry(victimEntry.getName(), victimEntry.getType());
-		targetDir.dirContent.put(targetInode.getInodeNum(), tempDirEntry);
-		targetDir.writeToDisk();
-	}
-	public void move(int srcFileInode, int targetDirInode) {	//just cut the entry from source to target directory
-		DirEntry victimEntry = this.dirContent.remove(srcFileInode);
-		Directory targetDir = new Directory(targetDirInode);
-		targetDir.dirContent.put(srcFileInode, victimEntry);
-		
+	public void copy(int srcFileInode, int sourceDirInode) {
+		Inode srcInode = new Inode(srcFileInode);
+		Inode targetInode = new Inode(srcInode);
+		Directory srcDir = new Directory(sourceDirInode);
+		DirEntry srcEntry = srcDir.dirContent.get(srcFileInode);
+		DirEntry tempDirEntry = new DirEntry(srcEntry.getName(), srcEntry.getType());
+		if(srcEntry.getType() == 'd') {
+			Directory victimDir = new Directory(srcFileInode);
+			Directory targetDir = new Directory(targetInode.getInodeNum());
+			Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
+			while(dirEntriesNavi.hasNext()) {
+				Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
+				targetDir.copy(pairs.getKey(), srcFileInode);		
+			}
+		}
+		this.dirContent.put(targetInode.getInodeNum(), tempDirEntry);
 		this.writeToDisk();
-		targetDir.writeToDisk();
+	}
+	public void move(int srcFileInode, int srcDirInode) {	//just cut the entry from source to target directory
+		Directory srcDir = new Directory(srcDirInode);
+		DirEntry srcEntry = srcDir.dirContent.remove(srcFileInode);
+		this.dirContent.put(srcFileInode, srcEntry);
+		
+		srcDir.writeToDisk();
+		this.writeToDisk();
 	}
 	
 	public void editFile(int fileInodeNum) {
