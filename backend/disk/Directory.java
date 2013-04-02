@@ -62,11 +62,16 @@ public class Directory {
 		Inode victimInode = new Inode(victimInodeNo);
 		if(victimInode.getFileType() == 'd') {
 			Directory victimDir = new Directory(victimInodeNo);
+			int[] tempInode = new int[victimDir.dirContent.size() - 2];
 			Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
+			int i = 0;
 			while(dirEntriesNavi.hasNext()) {
 				Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
 				if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
-					victimDir.deleteFile(pairs.getKey());
+					tempInode[i++] = pairs.getKey();
+			}
+			for(int tempI : tempInode) {
+				victimDir.deleteFile(tempI);
 			}
 		}
 		victimInode.releaseBlocks();
