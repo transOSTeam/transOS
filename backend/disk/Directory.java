@@ -60,12 +60,18 @@ public class Directory {
 	
 	public void deleteFile(int victimInodeNo) {
 		Inode victimInode = new Inode(victimInodeNo);
+		if(victimInode.getFileType() == 'd') {
+			Directory victimDir = new Directory(victimInodeNo);
+			Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
+			while(dirEntriesNavi.hasNext()) {
+				Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
+				if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
+					victimDir.deleteFile(pairs.getKey());
+			}
+		}
 		victimInode.releaseBlocks();
 		FreeSpaceMgnt.consumeInode(victimInodeNo);
 		this.dirContent.remove(victimInodeNo);
-		/*Inode thisInode = new Inode(this.inodeNum);
-		thisInode.releaseBlocks();
-		FreeSpaceMgnt.consumeInode(this.inodeNum);*/
 		this.writeToDisk();
 	}
 	
@@ -120,29 +126,35 @@ public class Directory {
 	
 	public void copy(int srcFileInode, int sourceDirInode) {
 		Inode srcInode = new Inode(srcFileInode);
-		Inode targetInode = new Inode(srcInode);
-		Directory srcDir = new Directory(sourceDirInode);
-		DirEntry srcEntry = srcDir.dirContent.get(srcFileInode);
-		DirEntry tempDirEntry = new DirEntry(srcEntry.getName(), srcEntry.getType());
-		if(srcEntry.getType() == 'd') {
+		Inode targetInode = srcInode.duplicate();
+		if(srcInode.getFileType() == 'd') {
 			Directory victimDir = new Directory(srcFileInode);
+			String newDirContent = "d "+String.format("%03d", targetInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
+			targetInode.writeContent(newDirContent);
+			targetInode.writeToDisk();
 			Directory targetDir = new Directory(targetInode.getInodeNum());
 			Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
 			while(dirEntriesNavi.hasNext()) {
 				Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
-				targetDir.copy(pairs.getKey(), srcFileInode);		
+				if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
+					targetDir.copy(pairs.getKey(), srcFileInode);		
 			}
 		}
+		else if(srcInode.getFileType() == 'r') {
+			String content = srcInode.getFileContent();
+			targetInode.writeContent(content);
+			targetInode.writeToDisk();
+		}
+		Directory srcDir = new Directory(sourceDirInode);
+		DirEntry srcEntry = srcDir.dirContent.get(srcFileInode);
+		DirEntry tempDirEntry = new DirEntry(srcEntry.getName(), srcEntry.getType());
 		this.dirContent.put(targetInode.getInodeNum(), tempDirEntry);
 		this.writeToDisk();
 	}
-	public void move(int srcFileInode, int srcDirInode) {	//just cut the entry from source to target directory
-		Directory srcDir = new Directory(srcDirInode);
-		DirEntry srcEntry = srcDir.dirContent.remove(srcFileInode);
-		this.dirContent.put(srcFileInode, srcEntry);
-		
-		srcDir.writeToDisk();
-		this.writeToDisk();
+	public void move(int srcFileInode, int srcDirInode) {	//move and delete original entry
+		this.copy(srcFileInode, srcDirInode);
+		Directory victimParentDir = new Directory(srcDirInode);
+		victimParentDir.deleteFile(srcFileInode);
 	}
 	
 	public void editFile(int fileInodeNum) {

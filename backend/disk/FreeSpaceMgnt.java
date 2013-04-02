@@ -119,7 +119,7 @@ public class FreeSpaceMgnt {
 			e.printStackTrace();
 		}
 		
-		if(dirtyBuffer[0] == 1) {				//write dirty inode buffer to disk
+		if(dirtyBuffer[1] == 1) {				//write dirty block buffer to disk
 			int noOfBlocksBitmap = 4; 					// hard code: 2000sized bitmap will require 4 blocks of 500
 			try {
 				superBlock.readLine();
@@ -139,7 +139,7 @@ public class FreeSpaceMgnt {
 				e.printStackTrace();
 			}
 		}
-		if(dirtyBuffer[1] == 1) {				//write dirty block buffer to disk
+		if(dirtyBuffer[0] == 1) {				//write dirty inode buffer to disk
 			try {
 				superBlock.seek(0);
 				superBlock.readLine();

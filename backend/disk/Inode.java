@@ -100,12 +100,10 @@ public class Inode {
 		isDirty = 1;
 	}
 	
-	public Inode(Inode victimInode) {
+	public Inode duplicate() {
 		int newInodeNo = FreeSpaceMgnt.getInode();
-		Inode newInode = new Inode(newInodeNo, victimInode.userId,victimInode.grpId, victimInode.permission[0], victimInode.permission[1], victimInode.permission[2], victimInode.fileType);
-		String content = victimInode.getFileContent();
-		newInode.writeContent(content);
-		newInode.writeToDisk();
+		Inode newInode = new Inode(newInodeNo, this.userId,this.grpId, this.permission[0], this.permission[1], this.permission[2], this.fileType);
+		return newInode;
 	}
 	private int getInodeAddress(int inodeNumber) {
 		int address = 0;

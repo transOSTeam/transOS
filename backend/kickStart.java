@@ -24,6 +24,7 @@ public class kickStart {
 
 		if(!disk.exists()){
 			Disk.createDisk();
+			Disk.shutDown();
 		}
 	}
 }
