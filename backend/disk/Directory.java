@@ -87,12 +87,36 @@ public class Directory {
 		String content = "d "+String.format("%03d", newDirInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
 		newDirInode.writeContent(content);
 		newDirInode.writeToDisk();
+		dirName = this.cleanseName(dirName);
 		DirEntry tempDirEntry = new DirEntry(dirName, 'd');
 		this.dirContent.put(inodeNum, tempDirEntry);
 		this.writeToDisk();
 		return newDirInode;
 	}
 	
+	private String cleanseName(String dirName) {
+		boolean done = false, interrupted = false;
+		int i = 1;
+		while(!done) {
+			interrupted = false;
+			Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = this.dirContent.entrySet().iterator();
+			while(dirEntriesNavi.hasNext()) {
+				Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
+				DirEntry tempVal = (DirEntry) pairs.getValue();
+				if(tempVal.getName().compareTo(dirName) == 0) {
+					if(dirName.charAt(dirName.length() - 1) == ')')
+						dirName = dirName.substring(0, dirName.length() - 3);
+					dirName = dirName + "(" + i + ")";
+					i++;
+					interrupted = true;
+				}
+			}
+			if(!interrupted)
+				done = true;
+		}
+		return dirName;
+	}
+
 	private void writeToDisk() {
 		String content = new String();
 		Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = this.dirContent.entrySet().iterator();
@@ -126,7 +150,7 @@ public class Directory {
 	
 	public void renameFile(int targetInodeNum, String newFileName) {
 		this.dirContent.remove(targetInodeNum);
-		this.dirContent.put(targetInodeNum, new DirEntry(newFileName, 'd'));
+		this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), 'd'));
 		this.writeToDisk();
 	}
 	
@@ -153,7 +177,7 @@ public class Directory {
 		}
 		Directory srcDir = new Directory(sourceDirInode);
 		DirEntry srcEntry = srcDir.dirContent.get(srcFileInode);
-		DirEntry tempDirEntry = new DirEntry(srcEntry.getName(), srcEntry.getType());
+		DirEntry tempDirEntry = new DirEntry(this.cleanseName(srcEntry.getName()), srcEntry.getType());
 		this.dirContent.put(targetInode.getInodeNum(), tempDirEntry);
 		this.writeToDisk();
 	}
