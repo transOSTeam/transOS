@@ -7,11 +7,11 @@ import backend.disk.DiskWatcher;
 import frontend.GuiStarter;
 
 
-public class kickStart {
+public class System {
 
 	
 	public static void main(String[] args) {
-		kickStart.chkDisk();
+		System.chkDisk();
 		Disk.bootUp();
 		DiskWatcher dw = new DiskWatcher();
 		Thread watcher = new Thread(dw);

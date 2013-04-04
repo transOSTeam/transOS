@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import backend.User;
+
 
 
 public class Disk {
@@ -33,6 +35,7 @@ public class Disk {
 		initializeInodes();
 		initializeFreeSpaceMgnt();
 		FreeSpaceMgnt.init();
+		User.initUserMgnt();
 		createRootDir();
 	}
 	

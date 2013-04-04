@@ -35,3 +35,10 @@ DIRECTORY STRUCTURE
 1 d 123 folder1
 2 d 324 folder2
 3 r 411 newFile
+
+______________________________________________________________________________________________________________________________
+USER-PASSWORD FILE
+UserName	PswdHash	UserId		GroupId
+
+GROUP LIST FILE
+GrpName		GrpId
