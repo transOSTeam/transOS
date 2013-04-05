@@ -47,7 +47,7 @@ public class IndirectBlocksDialog extends JComponent{
 			btn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent ev) {
 					JButton b = (JButton)ev.getSource();
-					File tempFile = new File(Disk.transDisk.toString() + "/" +  b.getText());
+					File tempFile = new File(Disk.transDisk.toString() + "/" +  b.getText() + ".txt");
 					try {
 						Desktop.getDesktop().open(tempFile);
 					} catch (IOException e) {
