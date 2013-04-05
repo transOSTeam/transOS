@@ -49,4 +49,7 @@ public class TransSystem {
 	public static User getUser() {
 		return loggedInUser;
 	}
+	public static void setUser(User newUser) {
+		TransSystem.loggedInUser = newUser;
+	}
 }

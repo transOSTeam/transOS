@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import backend.InvalidUserException;
+import backend.PermissionDeniedException;
 import backend.TransSystem;
 import backend.User;
 
@@ -22,6 +24,7 @@ import backend.User;
 public class Directory {
 	private int inodeNum;
 	//private int parentInodeNum;
+	public static boolean godMode = false;
 	private HashMap<Integer, DirEntry> dirContent;  
 	
 	public Directory(int inodeNum){
@@ -50,7 +53,7 @@ public class Directory {
 		}
 	}
 	
-	public Inode makeFile(String fileName, String fileContent) {
+	public Inode makeFile(String fileName, String fileContent) throws PermissionDeniedException {
 		if(this.isWritable(new Inode(this.inodeNum))) {
 			int inodeNum = FreeSpaceMgnt.getInode();
 			Inode newFileInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'r');
@@ -62,12 +65,11 @@ public class Directory {
 			return newFileInode;
 		}
 		else {
-			//permission denied
-			return null;
+			throw new PermissionDeniedException();
 		}
 	}
 	
-	public void deleteFile(int victimInodeNo) {
+	public void deleteFile(int victimInodeNo) throws PermissionDeniedException {
 		Inode victimInode = new Inode(victimInodeNo);
 		Inode victimsFolder = new Inode(this.inodeNum);
 		if(this.isWritable(victimInode) && this.isWritable(victimsFolder)) {
@@ -92,10 +94,10 @@ public class Directory {
 			this.writeToDisk();
 		}
 		else
-			;//permission denied
+			throw new PermissionDeniedException();
 	}
 	
-	public Inode makeDir(String dirName) {
+	public Inode makeDir(String dirName) throws PermissionDeniedException {
 		if(this.isWritable(new Inode(this.inodeNum))) {
 			int inodeNum = FreeSpaceMgnt.getInode();
 			Inode newDirInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'd');
@@ -109,8 +111,7 @@ public class Directory {
 			return newDirInode;
 		}
 		else {
-			//permission denied
-			return null;
+			throw new PermissionDeniedException();
 		}
 	}
 	
@@ -151,13 +152,12 @@ public class Directory {
 		thisInode.writeToDisk();
 	}
 	
-	public HashMap<Integer, DirEntry> getDirContent(){
+	public HashMap<Integer, DirEntry> getDirContent() throws PermissionDeniedException{
 		if(this.isReadable(new Inode(this.inodeNum))) {
 			return this.dirContent;
 		}
 		else {
-			//permission denied
-			return null;
+			throw new PermissionDeniedException();
 		}
 	}
 	
@@ -174,17 +174,17 @@ public class Directory {
 		return inodeNum;
 	}
 	
-	public void renameFile(int targetInodeNum, String newFileName) {
+	public void renameFile(int targetInodeNum, String newFileName) throws PermissionDeniedException {
 		if(this.isWritable(new Inode(this.inodeNum))) {
 			this.dirContent.remove(targetInodeNum);
 			this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), 'd'));
 			this.writeToDisk();
 		}
 		else
-			;//permission denied
+			throw new PermissionDeniedException();
 	}
 	
-	public void copy(int srcFileInode, int sourceDirInode) {
+	public void copy(int srcFileInode, int sourceDirInode) throws PermissionDeniedException {
 		Inode srcInode = new Inode(srcFileInode);
 		Inode targetDirInode = new Inode(this.inodeNum);
 		if(this.isReadable(srcInode) && this.isWritable(targetDirInode)) {
@@ -214,7 +214,7 @@ public class Directory {
 			this.writeToDisk();
 		}
 		else
-			;//ERROR: permission denied
+			throw new PermissionDeniedException();
 	}
 	/*
 	 * Possible permissions:
@@ -224,37 +224,47 @@ public class Directory {
 	 * [User][Group][World]
 	 * */
 	private boolean isReadable(Inode srcInode) {
-		boolean readable = false;
-		int[] perm = srcInode.getPermissions();
-		if(perm[2] >= 4)
-			readable = true;
-		else if(perm[1] >= 4){
-			if(TransSystem.getUser().getGrpId() == srcInode.getGrpId())
-				readable = true;
+		if(godMode) {
+			return true;
 		}
-		else if(perm[0] >= 4) {
-			if(TransSystem.getUser().getUserId() == srcInode.getUserId())
+		else {
+			boolean readable = false;
+			int[] perm = srcInode.getPermissions();
+			if(perm[2] >= 4)
 				readable = true;
+			else if(perm[1] >= 4){
+				if(TransSystem.getUser().getGrpId() == srcInode.getGrpId())
+					readable = true;
+			}
+			else if(perm[0] >= 4) {
+				if(TransSystem.getUser().getUserId() == srcInode.getUserId())
+					readable = true;
+			}
+			return readable;
 		}
-		return readable;
 	}
 	private boolean isWritable(Inode srcInode) {
-		boolean writable = false;
-		int[] perm = srcInode.getPermissions();
-		if(perm[2] >= 6)
-			writable = true;
-		else if(perm[1] >= 6) {
-			if(TransSystem.getUser().getGrpId() == srcInode.getGrpId())
-				writable = true;
+		if(godMode) {
+			return true;
 		}
-		else if(perm[0] >= 6) {
-			if(TransSystem.getUser().getUserId() == srcInode.getUserId())
+		else {
+			boolean writable = false;
+			int[] perm = srcInode.getPermissions();
+			if(perm[2] >= 6)
 				writable = true;
+			else if(perm[1] >= 6) {
+				if(TransSystem.getUser().getGrpId() == srcInode.getGrpId())
+					writable = true;
+			}
+			else if(perm[0] >= 6) {
+				if(TransSystem.getUser().getUserId() == srcInode.getUserId())
+					writable = true;
+			}
+			return writable;
 		}
-		return writable;
 	}
 	
-	public void move(int srcFileInode, int srcDirInode) {	//move and delete original entry
+	public void move(int srcFileInode, int srcDirInode) throws PermissionDeniedException {	//move and delete original entry
 		Inode srcFileI = new Inode(srcFileInode);
 		Inode srcDirI = new Inode(srcDirInode);
 		Inode targetDirInode = new Inode(this.inodeNum);
@@ -264,10 +274,10 @@ public class Directory {
 			victimParentDir.deleteFile(srcFileInode);
 		}
 		else
-			;//permission denied
+			throw new PermissionDeniedException();
 	}
 	
-	public void editFile(int fileInodeNum) {
+	public void editFile(int fileInodeNum) throws PermissionDeniedException {
 		Inode fileInode = new Inode(fileInodeNum);
 		if(this.isWritable(fileInode)) {
 			if(fileInode.getFileType() == 'r') {
@@ -286,9 +296,9 @@ public class Directory {
 			}
 		}
 		else
-			;//permission denied
+			throw new PermissionDeniedException();
 	}
-	public void chmod(int targetInodeNum, String permS) {
+	public void chmod(int targetInodeNum, String permS) throws PermissionDeniedException {
 		Inode targetInode = new Inode(targetInodeNum);
 		if(TransSystem.getUser().getUserId() == targetInode.getUserId()) {
 			int[] perm = new int[3];
@@ -298,9 +308,9 @@ public class Directory {
 			targetInode.setPermissions(perm);
 		}
 		else
-			;//permission denied
+			throw new PermissionDeniedException();
 	}
-	public void chown(int targetInodeNum, String newUser) {
+	public void chown(int targetInodeNum, String newUser) throws PermissionDeniedException, InvalidUserException {
 		Inode targetInode = new Inode(targetInodeNum);
 		if(targetInode.getUserId() == targetInode.getUserId()) {
 			int newUserId = User.getUserId(newUser);
@@ -308,9 +318,9 @@ public class Directory {
 				targetInode.setUserId(newUserId);
 			}
 			else
-				;//invalid user
+				throw new InvalidUserException();
 		}
 		else
-			;//permission denied
+			throw new PermissionDeniedException();
 	}
 }

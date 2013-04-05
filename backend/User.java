@@ -48,14 +48,18 @@ public class User {
 			if(noProblem) {
 				int grpId = calculateGrpId(grpName);
 				newUser = new User(newUsername, grpName, entriesRead, grpId);
-				if(newUsername.compareTo("root") == 0) {
-					newUser.homeDirInodeNum = 2;
-				}
-				else {
-					Directory rootDir = new Directory(2);
-					Inode homeDirInode = rootDir.makeDir(newUsername);
+				TransSystem.setUser(newUser);
+				Directory.godMode = true;
+				Directory rootDir = new Directory(2);
+				Inode homeDirInode;
+				try {
+					homeDirInode = rootDir.makeDir(newUsername);
 					newUser.homeDirInodeNum = homeDirInode.getInodeNum();
+				} catch (PermissionDeniedException e) {
+					e.printStackTrace();
 				}
+				Directory.godMode = false;
+				
 				pswdF.writeBytes(newUsername + "\t" + User.hashIt(password) + "\t" + entriesRead + "\t" + grpId + "\t" + newUser.homeDirInodeNum +"\n");
 			}
 			pswdF.close();
