@@ -975,7 +975,6 @@ public class FolderListing extends JComponent{
 				s.push("/");
 			}
 			else if(temp[i].equals(".")){}
-			else if(temp[i].equals("root")){}
 			else if(temp[i].equals("..")){
 				if(!s.peek().equals("/")){
 					s.pop();

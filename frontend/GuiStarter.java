@@ -186,7 +186,7 @@ public class GuiStarter {
 	private void showRoot(){
 		BufferedImage img = null;
 		JButton lbl;
-		String folderName = "root";
+		String folderName = "";
 		
 		int homeInodeNum = TransSystem.getUser().getHomeDirInodeNum();
 		Directory root = new Directory(2);
