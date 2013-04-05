@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 
 public class Inode {
@@ -345,5 +346,25 @@ public class Inode {
 	}
 	public void setUserId(int newUserId) {
 		this.userId = newUserId;
+	}
+	public ArrayList<Integer> getIndirectBlocks() {
+		ArrayList<Integer> pointers = null;
+		if(this.blockPointers[4] != 0) {
+			pointers = new ArrayList<Integer>();
+			try {
+				Block indirectPointerBlk = new Block(this.blockPointers[4], "r");
+				String buffer;
+				while((buffer = indirectPointerBlk.readLine()) != null) {
+					pointers.add(Integer.parseInt(buffer));
+				}
+				indirectPointerBlk.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		return pointers;
 	}
 }
