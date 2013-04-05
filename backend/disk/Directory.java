@@ -34,7 +34,7 @@ public class Directory {
 		int[] blkPointers = dirInode.getBlockPointers();
 		for(int i = 0; i < dirInode.getBlockCount(); i++) {
 			try {
-				Block tempBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blkPointers[i]), "r");
+				Block tempBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blkPointers[i]) + ".txt", "r");
 				for(String tempBuffer = tempBlk.readLine(); tempBuffer != null;tempBuffer = tempBlk.readLine()) {
 					char tempType = tempBuffer.charAt(0);						//string is going to like this: "r 123\tfolder1\n"
 					int tempInode = Integer.parseInt(tempBuffer.substring(2, 5));

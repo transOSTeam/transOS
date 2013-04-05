@@ -65,7 +65,7 @@ public class FreeSpaceMgnt {
 	public static void init() {
 		Block superBlock = null;
 		try {
-			superBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
+			superBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress) + ".txt","r");
 			superBlock.readLine();
 			int[] freeBlockBitmapNo = new int[4];
 			String bitmap = superBlock.readLine();
@@ -115,7 +115,7 @@ public class FreeSpaceMgnt {
 	public static void shutDown() {
 		Block superBlock = null;
 		try {
-			superBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
+			superBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress) + ".txt","r");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -131,7 +131,7 @@ public class FreeSpaceMgnt {
 				
 				byte[] bitmapPieces;
 				for(int i = 0, off = 0; i < 4; i++, off += 500) {
-					Block bitmapBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo[i]),"rw");
+					Block bitmapBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo[i]) + ".txt","rw");
 					bitmapPieces = FreeSpaceMgnt.prepBuffer(Arrays.copyOfRange(freeBlockBitmap, off, off + 500));
 					bitmapBlock.write(bitmapPieces);			//..test this!!!
 					bitmapBlock.close();
@@ -146,7 +146,7 @@ public class FreeSpaceMgnt {
 				superBlock.readLine();
 				superBlock.readLine();
 				int freeInodeBitmapNo = Integer.parseInt(superBlock.readLine());
-				Block freeInodeBitmapBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo),"rw");
+				Block freeInodeBitmapBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo) + ".txt","rw");
 				freeInodeBitmapBlk.write(prepBuffer(freeInodeBitmap));
 				freeInodeBitmapBlk.close();
 			} catch (IOException e) {

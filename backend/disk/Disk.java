@@ -44,7 +44,7 @@ public class Disk {
 		try {
 			//initialize free block bitmap
 			int noOfBlocksBitmap = 4; 					// hard code: 2000sized bitmap will require 4 blocks of 500
-			Block superBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress),"r");
+			Block superBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", Disk.superBlockAddress) + ".txt","r");
 			superBlock.readLine();
 			int[] freeBlockBitmapNo = new int[noOfBlocksBitmap];
 			String tempStr = superBlock.readLine();
@@ -66,7 +66,7 @@ public class Disk {
 			}
 			
 			for(i = 0; i < 4; i++) {
-				Block bitmapBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo[i]),"rw");
+				Block bitmapBlock = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeBlockBitmapNo[i]) + ".txt","rw");
 				bitmapBlock.write(freeSpaceBitmapContent[i]);
 				bitmapBlock.close();
 			}
@@ -80,7 +80,7 @@ public class Disk {
 			for(i = 3; i < (Disk.inodeEndBlock - Disk.inodeStartBlock + 1)*4; i++) {
 				freeInodeContent[i] = 48;
 			}
-			Block freeInodeBitmapBlk = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo), "rw");
+			Block freeInodeBitmapBlk = new Block(homeDir.toString() + "/TransDisk/" + String.format("%05d", freeInodeBitmapNo) + ".txt", "rw");
 			freeInodeBitmapBlk.write(freeInodeContent);
 			freeInodeBitmapBlk.close();
 			superBlock.close();
@@ -100,7 +100,7 @@ public class Disk {
 
 	private static void initializeInodes() {
 		for(int i = inodeStartBlock; i <= inodeEndBlock; i++){
-			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i));
+			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i) + ".txt");
 			if(!f.exists()){
 				System.out.println("Fatal Error...block "+i+" not present");
 			}
@@ -143,7 +143,7 @@ public class Disk {
 		try {
 			String content;// = "//Partition Table\n//Status\tStart\tEnd";			//4th entry omitted
 			
-			File partitionTable = new File(Disk.transDisk + "/" +String.format("%05d", Disk.partitionTableAddress));
+			File partitionTable = new File(Disk.transDisk + "/" +String.format("%05d", Disk.partitionTableAddress) + ".txt");
  
 			if (!partitionTable.exists()) {
 				System.out.println("Partition Table Not found");
@@ -162,7 +162,7 @@ public class Disk {
 		}
 		try {
 			final String fsBitmapAddress = "5678\n9";			//thats 5,6,7 and 8 and 9 has free Inode bitmap
-			Block superBlock = new Block(Disk.transDisk + "/" +String.format("%05d", Disk.superBlockAddress),"rw");
+			Block superBlock = new Block(Disk.transDisk + "/" +String.format("%05d", Disk.superBlockAddress) + ".txt","rw");
 			String content = Disk.noOfBlocks + "\n" + fsBitmapAddress;
 			superBlock.write(content.getBytes());
 			superBlock.close();

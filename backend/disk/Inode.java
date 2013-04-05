@@ -48,7 +48,7 @@ public class Inode {
 	public Inode(int inodeNum){							//constructor to bring existing Inode into memory (read)
 		int inodeBlockAdd = this.getInodeAddress(inodeNum);
 		try {
-			Block inodeBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", inodeBlockAdd), "r");
+			Block inodeBlock = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", inodeBlockAdd) + ".txt", "r");
 			inodeBlock.seek(inodeNum%4*inodeSize);
 			int intBuffer = Integer.parseInt(inodeBlock.readLine());
 			if(intBuffer == inodeNum) {
