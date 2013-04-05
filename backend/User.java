@@ -8,7 +8,9 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import backend.disk.Directory;
 import backend.disk.Disk;
+import backend.disk.Inode;
 
 public class User {
 	private String username;
@@ -16,6 +18,7 @@ public class User {
 	
 	private int userId;
 	private int grpId;
+	private int homeDirInodeNum;
 	
 	private static final String pswdFilePath = Disk.transDisk.toString() + "/pswd";
 	private static final String grpListPath = Disk.transDisk.toString() + "/groupList";
@@ -48,6 +51,9 @@ public class User {
 				newUser = new User(newUsername, grpName, entriesRead, grpId);
 			}
 			pswdF.close();
+			Directory rootDir = new Directory(2);
+			Inode homeDirInode = rootDir.makeDir(newUsername);
+			newUser.homeDirInodeNum = homeDirInode.getInodeNum();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
