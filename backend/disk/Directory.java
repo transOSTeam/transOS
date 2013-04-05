@@ -228,30 +228,30 @@ public class Directory {
 		int[] perm = srcInode.getPermissions();
 		if(perm[2] >= 4)
 			readable = true;
-		else if(TransSystem.getUser().getGrpId() == srcInode.getGrpId()) {
-			if(perm[1] >= 4)
+		else if(perm[1] >= 4){
+			if(TransSystem.getUser().getGrpId() == srcInode.getGrpId())
 				readable = true;
 		}
-		else if(TransSystem.getUser().getUserId() == srcInode.getUserId()) {
-			if(perm[0] >= 4)
+		else if(perm[0] >= 4) {
+			if(TransSystem.getUser().getUserId() == srcInode.getUserId())
 				readable = true;
 		}
 		return readable;
 	}
 	private boolean isWritable(Inode srcInode) {
-		boolean readable = false;
+		boolean writable = false;
 		int[] perm = srcInode.getPermissions();
 		if(perm[2] >= 6)
-			readable = true;
-		else if(TransSystem.getUser().getGrpId() == srcInode.getGrpId()) {
-			if(perm[1] >= 6)
-				readable = true;
+			writable = true;
+		else if(perm[1] >= 6) {
+			if(TransSystem.getUser().getGrpId() == srcInode.getGrpId())
+				writable = true;
 		}
-		else if(TransSystem.getUser().getUserId() == srcInode.getUserId()) {
-			if(perm[0] >= 6)
-				readable = true;
+		else if(perm[0] >= 6) {
+			if(TransSystem.getUser().getUserId() == srcInode.getUserId())
+				writable = true;
 		}
-		return readable;
+		return writable;
 	}
 	
 	public void move(int srcFileInode, int srcDirInode) {	//move and delete original entry

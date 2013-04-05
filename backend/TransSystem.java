@@ -28,11 +28,20 @@ public class TransSystem {
 			Disk.shutDown();
 		}
 	}
-	public boolean authenticateUser(String username, String pswdHash) {
+	public static boolean authenticateUser(String username, String pswdHash) {
 		boolean success = false;
 		User tempUser = User.authenticate(username, pswdHash);
 		if(tempUser != null) {
 			loggedInUser = tempUser;
+			success = true;
+		}
+		return success;
+	}
+	public static boolean registerUser(String username, String pswd, String grpName) {
+		boolean success = false;
+		User newUser = User.createNewUser(username, pswd, grpName);
+		if(newUser != null) {
+			loggedInUser = newUser;
 			success = true;
 		}
 		return success;

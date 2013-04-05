@@ -323,14 +323,14 @@ public class Inode {
 	public int getInodeNum(){
 		return this.inodeNumber;
 	}
-	public String getAccessedTime(){
-		return this.accessedTime.toString();
+	public Timestamp getAccessedTime(){
+		return this.accessedTime;
 	}
-	public String getModifiedTime(){
-		return this.modifyTime.toString();
+	public Timestamp getModifiedTime(){
+		return this.modifyTime;
 	}
-	public String getCreatedTime(){
-		return this.createdTime.toString();
+	public Timestamp getCreatedTime(){
+		return this.createdTime;
 	}
 	public int[] getPermissions(){
 		return this.permission;

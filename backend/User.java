@@ -42,7 +42,7 @@ public class User {
 					break;
 				}
 			}
-			if(!noProblem) {
+			if(noProblem) {
 				int grpId = calculateGrpId(grpName);
 				pswdF.writeBytes(newUsername + "\t" + User.hashIt(password) + "\t" + entriesRead + "\t" + grpId + "\n");
 				newUser = new User(newUsername, grpName, entriesRead, grpId);

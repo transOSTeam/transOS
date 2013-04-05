@@ -147,7 +147,7 @@ public class GuiStarter {
 			public void mousePressed(MouseEvent arg0) {
 				if(userName.getText().length() != 0 && password.getPassword().toString().length() != 0 ){
 					char[] a = password.getPassword();
-					String t = null;
+					String t = "";
 					for(int q = 0;q < a.length;q++){
 						t += a[q];
 					}
@@ -169,11 +169,11 @@ public class GuiStarter {
 			public void mousePressed(MouseEvent arg0) {
 				if(userName.getText().length() != 0 && password.getPassword().toString().length() != 0 ){
 					char[] a = password.getPassword();
-					String t = null;
+					String t = "";
 					for(int q = 0;q < a.length;q++){
 						t += a[q];
 					}
-					if(User.createNewUser(userName.getText(), t, "none") != null){
+					if(TransSystem.registerUser(userName.getText(), t, "none")){
 						showDesktop();
 					}
 				}
