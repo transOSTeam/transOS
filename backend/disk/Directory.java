@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import backend.TransSystem;
+
 
 
 //import backend.Directory.DirEntry;
@@ -48,50 +50,67 @@ public class Directory {
 	}
 	
 	public Inode makeFile(String fileName, String fileContent) {
-		int inodeNum = FreeSpaceMgnt.getInode();
-		Inode newFileInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'r');
-		newFileInode.writeContent(fileContent);
-		newFileInode.writeToDisk();
-		DirEntry tempDirEntry = new DirEntry(fileName, 'r');
-		this.dirContent.put(inodeNum, tempDirEntry);
-		this.writeToDisk();
-		return newFileInode;
+		if(this.isWritable(new Inode(this.inodeNum))) {
+			int inodeNum = FreeSpaceMgnt.getInode();
+			Inode newFileInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'r');
+			newFileInode.writeContent(fileContent);
+			newFileInode.writeToDisk();
+			DirEntry tempDirEntry = new DirEntry(fileName, 'r');
+			this.dirContent.put(inodeNum, tempDirEntry);
+			this.writeToDisk();
+			return newFileInode;
+		}
+		else {
+			//permission denied
+			return null;
+		}
 	}
 	
 	public void deleteFile(int victimInodeNo) {
-		System.out.println("in del");
 		Inode victimInode = new Inode(victimInodeNo);
-		if(victimInode.getFileType() == 'd') {
-			Directory victimDir = new Directory(victimInodeNo);
-			int[] tempInode = new int[victimDir.dirContent.size() - 2];
-			Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
-			int i = 0;
-			while(dirEntriesNavi.hasNext()) {
-				Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
-				if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
-					tempInode[i++] = pairs.getKey();
+		Inode victimsFolder = new Inode(this.inodeNum);
+		if(this.isWritable(victimInode) && this.isWritable(victimsFolder)) {
+			System.out.println("in del");
+			if(victimInode.getFileType() == 'd') {
+				Directory victimDir = new Directory(victimInodeNo);
+				int[] tempInode = new int[victimDir.dirContent.size() - 2];
+				Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
+				int i = 0;
+				while(dirEntriesNavi.hasNext()) {
+					Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
+					if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
+						tempInode[i++] = pairs.getKey();
+				}
+				for(int tempI : tempInode) {
+					victimDir.deleteFile(tempI);
+				}
 			}
-			for(int tempI : tempInode) {
-				victimDir.deleteFile(tempI);
-			}
+			victimInode.releaseBlocks();
+			FreeSpaceMgnt.consumeInode(victimInodeNo);
+			this.dirContent.remove(victimInodeNo);
+			this.writeToDisk();
 		}
-		victimInode.releaseBlocks();
-		FreeSpaceMgnt.consumeInode(victimInodeNo);
-		this.dirContent.remove(victimInodeNo);
-		this.writeToDisk();
+		else
+			;//permission denied
 	}
 	
 	public Inode makeDir(String dirName) {
-		int inodeNum = FreeSpaceMgnt.getInode();
-		Inode newDirInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'd');
-		String content = "d "+String.format("%03d", newDirInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
-		newDirInode.writeContent(content);
-		newDirInode.writeToDisk();
-		dirName = this.cleanseName(dirName);
-		DirEntry tempDirEntry = new DirEntry(dirName, 'd');
-		this.dirContent.put(inodeNum, tempDirEntry);
-		this.writeToDisk();
-		return newDirInode;
+		if(this.isWritable(new Inode(this.inodeNum))) {
+			int inodeNum = FreeSpaceMgnt.getInode();
+			Inode newDirInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'd');
+			String content = "d "+String.format("%03d", newDirInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
+			newDirInode.writeContent(content);
+			newDirInode.writeToDisk();
+			dirName = this.cleanseName(dirName);
+			DirEntry tempDirEntry = new DirEntry(dirName, 'd');
+			this.dirContent.put(inodeNum, tempDirEntry);
+			this.writeToDisk();
+			return newDirInode;
+		}
+		else {
+			//permission denied
+			return null;
+		}
 	}
 	
 	private String cleanseName(String dirName) {
@@ -132,7 +151,13 @@ public class Directory {
 	}
 	
 	public HashMap<Integer, DirEntry> getDirContent(){
-		return this.dirContent;
+		if(this.isReadable(new Inode(this.inodeNum))) {
+			return this.dirContent;
+		}
+		else {
+			//permission denied
+			return null;
+		}
 	}
 	
 	public int searchDir(String name) {				//linear search
@@ -149,59 +174,117 @@ public class Directory {
 	}
 	
 	public void renameFile(int targetInodeNum, String newFileName) {
-		this.dirContent.remove(targetInodeNum);
-		this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), 'd'));
-		this.writeToDisk();
+		if(this.isWritable(new Inode(this.inodeNum))) {
+			this.dirContent.remove(targetInodeNum);
+			this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), 'd'));
+			this.writeToDisk();
+		}
+		else
+			;//permission denied
 	}
 	
 	public void copy(int srcFileInode, int sourceDirInode) {
 		Inode srcInode = new Inode(srcFileInode);
-		Inode targetInode = srcInode.duplicate();
-		if(srcInode.getFileType() == 'd') {
-			Directory victimDir = new Directory(srcFileInode);
-			String newDirContent = "d "+String.format("%03d", targetInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
-			targetInode.writeContent(newDirContent);
-			targetInode.writeToDisk();
-			Directory targetDir = new Directory(targetInode.getInodeNum());
-			Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
-			while(dirEntriesNavi.hasNext()) {
-				Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
-				if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
-					targetDir.copy(pairs.getKey(), srcFileInode);		
+		Inode targetDirInode = new Inode(this.inodeNum);
+		if(this.isReadable(srcInode) && this.isWritable(targetDirInode)) {
+			Inode targetInode = srcInode.duplicate();
+			if(srcInode.getFileType() == 'd') {
+				Directory victimDir = new Directory(srcFileInode);
+				String newDirContent = "d "+String.format("%03d", targetInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
+				targetInode.writeContent(newDirContent);
+				targetInode.writeToDisk();
+				Directory targetDir = new Directory(targetInode.getInodeNum());
+				Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = victimDir.dirContent.entrySet().iterator();
+				while(dirEntriesNavi.hasNext()) {
+					Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
+					if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
+						targetDir.copy(pairs.getKey(), srcFileInode);		
+				}
 			}
+			else if(srcInode.getFileType() == 'r') {
+				String content = srcInode.getFileContent();
+				targetInode.writeContent(content);
+				targetInode.writeToDisk();
+			}
+			Directory srcDir = new Directory(sourceDirInode);
+			DirEntry srcEntry = srcDir.dirContent.get(srcFileInode);
+			DirEntry tempDirEntry = new DirEntry(this.cleanseName(srcEntry.getName()), srcEntry.getType());
+			this.dirContent.put(targetInode.getInodeNum(), tempDirEntry);
+			this.writeToDisk();
 		}
-		else if(srcInode.getFileType() == 'r') {
-			String content = srcInode.getFileContent();
-			targetInode.writeContent(content);
-			targetInode.writeToDisk();
-		}
-		Directory srcDir = new Directory(sourceDirInode);
-		DirEntry srcEntry = srcDir.dirContent.get(srcFileInode);
-		DirEntry tempDirEntry = new DirEntry(this.cleanseName(srcEntry.getName()), srcEntry.getType());
-		this.dirContent.put(targetInode.getInodeNum(), tempDirEntry);
-		this.writeToDisk();
+		else
+			;//ERROR: permission denied
 	}
+	/*
+	 * Possible permissions:
+	 * 4: read
+	 * 2: write
+	 * 1: is owner
+	 * [User][Group][World]
+	 * */
+	private boolean isReadable(Inode srcInode) {
+		boolean readable = false;
+		int[] perm = srcInode.getPermissions();
+		if(perm[2] >= 4)
+			readable = true;
+		else if(TransSystem.getUser().getGrpId() == srcInode.getGrpId()) {
+			if(perm[1] >= 4)
+				readable = true;
+		}
+		else if(TransSystem.getUser().getUserId() == srcInode.getUserId()) {
+			if(perm[0] >= 4)
+				readable = true;
+		}
+		return readable;
+	}
+	private boolean isWritable(Inode srcInode) {
+		boolean readable = false;
+		int[] perm = srcInode.getPermissions();
+		if(perm[2] >= 6)
+			readable = true;
+		else if(TransSystem.getUser().getGrpId() == srcInode.getGrpId()) {
+			if(perm[1] >= 6)
+				readable = true;
+		}
+		else if(TransSystem.getUser().getUserId() == srcInode.getUserId()) {
+			if(perm[0] >= 6)
+				readable = true;
+		}
+		return readable;
+	}
+	
 	public void move(int srcFileInode, int srcDirInode) {	//move and delete original entry
-		this.copy(srcFileInode, srcDirInode);
-		Directory victimParentDir = new Directory(srcDirInode);
-		victimParentDir.deleteFile(srcFileInode);
+		Inode srcFileI = new Inode(srcFileInode);
+		Inode srcDirI = new Inode(srcDirInode);
+		Inode targetDirInode = new Inode(this.inodeNum);
+		if(this.isReadable(srcFileI) && this.isWritable(srcDirI) && this.isWritable(targetDirInode)) {
+			this.copy(srcFileInode, srcDirInode);
+			Directory victimParentDir = new Directory(srcDirInode);
+			victimParentDir.deleteFile(srcFileInode);
+		}
+		else
+			;//permission denied
 	}
 	
 	public void editFile(int fileInodeNum) {
 		Inode fileInode = new Inode(fileInodeNum);
-		if(fileInode.getFileType() == 'r') {
-			File tempFile = null;
-			String content = fileInode.getFileContent();
-			try {
-				tempFile = new File(Disk.tmpFolder.toString() + "/" + fileInodeNum + ".txt");
-				tempFile.deleteOnExit();
-				RandomAccessFile tempRF = new RandomAccessFile(tempFile, "rw");
-				tempRF.writeBytes(content);
-				Desktop.getDesktop().open(tempFile);
-				tempRF.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+		if(this.isWritable(fileInode)) {
+			if(fileInode.getFileType() == 'r') {
+				File tempFile = null;
+				String content = fileInode.getFileContent();
+				try {
+					tempFile = new File(Disk.tmpFolder.toString() + "/" + fileInodeNum + ".txt");
+					tempFile.deleteOnExit();
+					RandomAccessFile tempRF = new RandomAccessFile(tempFile, "rw");
+					tempRF.writeBytes(content);
+					Desktop.getDesktop().open(tempFile);
+					tempRF.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		else
+			;//permission denied
 	}
 }

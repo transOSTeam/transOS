@@ -334,5 +334,10 @@ public class Inode {
 	public int[] getPermissions(){
 		return this.permission;
 	}
-	
+	public int getUserId() {
+		return this.userId;
+	}
+	public int getGrpId() {
+		return this.grpId;
+	}
 }

@@ -7,11 +7,12 @@ import backend.disk.DiskWatcher;
 import frontend.GuiStarter;
 
 
-public class System {
+public class TransSystem {
 
+	private static User loggedInUser;
 	
 	public static void main(String[] args) {
-		System.chkDisk();
+		TransSystem.chkDisk();
 		Disk.bootUp();
 		DiskWatcher dw = new DiskWatcher();
 		Thread watcher = new Thread(dw);
@@ -26,5 +27,17 @@ public class System {
 			Disk.createDisk();
 			Disk.shutDown();
 		}
+	}
+	public boolean authenticateUser(String username, String pswdHash) {
+		boolean success = false;
+		User tempUser = User.authenticate(username, pswdHash);
+		if(tempUser != null) {
+			loggedInUser = tempUser;
+			success = true;
+		}
+		return success;
+	}
+	public static User getUser() {
+		return loggedInUser;
 	}
 }
