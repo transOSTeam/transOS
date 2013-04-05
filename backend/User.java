@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import backend.disk.Disk;
 
@@ -24,7 +27,7 @@ public class User {
 		this.grpId = grpId;
 	}
 	
-	public User createNewUser(String newUsername, String password, String grpName) {
+	public static User createNewUser(String newUsername, String password, String grpName) {
 		User newUser = null;
 		boolean noProblem = true;
 		int entriesRead = 1;
@@ -53,7 +56,7 @@ public class User {
 		return newUser;
 	}
 	
-	private int calculateGrpId(String grpName) {
+	private static int calculateGrpId(String grpName) {
 		int grpId = 0, entriesRead = 1;
 		try {
 			RandomAccessFile grpListFile = new RandomAccessFile(User.grpListPath, "rw");
@@ -81,9 +84,23 @@ public class User {
 		return grpId;
 	}
 
-	private static String hashIt(String password) {
-		
-		return null;
+	public static String hashIt(String input) {
+		MessageDigest m = null;
+		try {
+			m = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e1) {
+			e1.printStackTrace();
+		}
+		m.reset();
+		m.update(input.getBytes());
+		byte[] digest = m.digest();
+		BigInteger bigInt = new BigInteger(1,digest);
+		String hashtext = bigInt.toString(16);
+		// Now we need to zero pad it if you actually want the full 32 chars.
+		while(hashtext.length() < 32 ){
+		  hashtext = "0"+hashtext;
+		}
+		return hashtext;
 	}
 
 	public String getUsername() {
@@ -157,8 +174,28 @@ public class User {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
+		}		
 		return grpName;
+	}
+	public static int getUserId(String name) {
+		boolean done = false;
+		int userId = 0;
+		try {
+			RandomAccessFile pswdF = new RandomAccessFile(User.pswdFilePath, "r");
+			String buffer;
+			while((buffer = pswdF.readLine()) != null && !done) {
+				String[] splitBuffer = buffer.split("\t");
+				if(splitBuffer[0].compareTo(name) == 0) {
+					userId = Integer.parseInt(splitBuffer[2]);
+					done = true;
+				}
+			}
+			pswdF.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return userId;
 	}
 }

@@ -36,6 +36,7 @@ public class Disk {
 		initializeFreeSpaceMgnt();
 		FreeSpaceMgnt.init();
 		User.initUserMgnt();
+		User.createNewUser("root", "root123", "none");
 		createRootDir();
 	}
 	

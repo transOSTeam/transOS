@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import backend.TransSystem;
+import backend.User;
 
 
 
@@ -219,7 +220,7 @@ public class Directory {
 	 * Possible permissions:
 	 * 4: read
 	 * 2: write
-	 * 1: is owner
+	 * 1: execute???
 	 * [User][Group][World]
 	 * */
 	private boolean isReadable(Inode srcInode) {
@@ -283,6 +284,31 @@ public class Directory {
 					e.printStackTrace();
 				}
 			}
+		}
+		else
+			;//permission denied
+	}
+	public void chmod(int targetInodeNum, String permS) {
+		Inode targetInode = new Inode(targetInodeNum);
+		if(TransSystem.getUser().getUserId() == targetInode.getUserId()) {
+			int[] perm = new int[3];
+			for(int i = 0; i < 3; i++) {
+				perm[i] = Integer.parseInt(permS.substring(i, i+1));
+			}
+			targetInode.setPermissions(perm);
+		}
+		else
+			;//permission denied
+	}
+	public void chown(int targetInodeNum, String newUser) {
+		Inode targetInode = new Inode(targetInodeNum);
+		if(targetInode.getUserId() == targetInode.getUserId()) {
+			int newUserId = User.getUserId(newUser);
+			if(newUserId > 0) {
+				targetInode.setUserId(newUserId);
+			}
+			else
+				;//invalid user
 		}
 		else
 			;//permission denied

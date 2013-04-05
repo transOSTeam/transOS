@@ -340,4 +340,10 @@ public class Inode {
 	public int getGrpId() {
 		return this.grpId;
 	}
+	public void setPermissions(int[] perm) {
+		this.permission = perm;
+	}
+	public void setUserId(int newUserId) {
+		this.userId = newUserId;
+	}
 }
