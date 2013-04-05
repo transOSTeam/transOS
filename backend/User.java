@@ -204,4 +204,8 @@ public class User {
 		}
 		return userId;
 	}
+
+	public int getHomeDirInodeNum() {
+		return this.homeDirInodeNum;
+	}
 }

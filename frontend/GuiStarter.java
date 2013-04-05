@@ -47,6 +47,7 @@ public class GuiStarter {
 	JPanel contentPanelEast;
 	JPanel loginPanel;
 	JTextField userName;
+	JTextField groupName;
 	JPasswordField password;
 	JButton loginBtn;
 	JButton regBtn;
@@ -127,6 +128,7 @@ public class GuiStarter {
 		
 		JLabel userNameLbl = new JLabel("User Name: ");
 		JLabel pwdLabel = new JLabel("Password:  ");
+		JLabel groupNameLbl = new JLabel("Group Name: ");
 		
 		JPanel pnl1 = new JPanel();
 		userName = new JTextField();
@@ -139,6 +141,13 @@ public class GuiStarter {
 		password.setPreferredSize(new Dimension(80, 20));
 		pnl2.add(pwdLabel);
 		pnl2.add(password);
+		
+		JPanel pnl4 = new JPanel();
+		groupName = new JTextField();
+		groupName.setPreferredSize(new Dimension(80, 20));
+		groupName.setText("none");
+		pnl4.add(groupNameLbl);
+		pnl4.add(groupName);
 		
 		JPanel pnl3 = new JPanel();
 		loginBtn = new JButton("Login");
@@ -173,7 +182,7 @@ public class GuiStarter {
 					for(int q = 0;q < a.length;q++){
 						t += a[q];
 					}
-					if(TransSystem.registerUser(userName.getText(), t, "none")){
+					if(TransSystem.registerUser(userName.getText(), t, groupName.getText())){
 						showDesktop();
 					}
 				}
@@ -187,6 +196,7 @@ public class GuiStarter {
 		
 		innerPanel.add(pnl1);
 		innerPanel.add(pnl2);
+		innerPanel.add(pnl4);
 		innerPanel.add(pnl3);
 		loginPanel.add(innerPanel);
 		loginPanel.revalidate();
@@ -217,7 +227,7 @@ public class GuiStarter {
 		lbl = new JButton(new ImageIcon(img));
 		lbl.setBorder(BorderFactory.createEmptyBorder());
 		lbl.setContentAreaFilled(false);
-		String lblName = "lbl,d," + rootInodeNum;
+		String lblName = "lbl,d," + TransSystem.getUser().getHomeDirInodeNum();
 		lbl.setName(lblName);
 		lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(lblName, lbl);		
@@ -275,7 +285,7 @@ public class GuiStarter {
 		txt.setBackground(mainPanel.getBackground());
 		txt.setDisabledTextColor(Color.BLACK);
 		txt.setBorder(null);
-		String txtName = "txt,d," + rootInodeNum;
+		String txtName = "txt,d," + TransSystem.getUser().getHomeDirInodeNum();
 		txt.setName(txtName);
 		txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(txtName, txt);
