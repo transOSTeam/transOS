@@ -73,7 +73,6 @@ public class Directory {
 		Inode victimInode = new Inode(victimInodeNo);
 		Inode victimsFolder = new Inode(this.inodeNum);
 		if(this.isWritable(victimInode) && this.isWritable(victimsFolder)) {
-			System.out.println("in del");
 			if(victimInode.getFileType() == 'd') {
 				Directory victimDir = new Directory(victimInodeNo);
 				int[] tempInode = new int[victimDir.dirContent.size() - 2];
