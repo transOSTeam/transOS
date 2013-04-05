@@ -53,7 +53,7 @@ public class Directory {
 	public Inode makeFile(String fileName, String fileContent) {
 		if(this.isWritable(new Inode(this.inodeNum))) {
 			int inodeNum = FreeSpaceMgnt.getInode();
-			Inode newFileInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'r');
+			Inode newFileInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'r');
 			newFileInode.writeContent(fileContent);
 			newFileInode.writeToDisk();
 			DirEntry tempDirEntry = new DirEntry(fileName, 'r');
@@ -98,7 +98,7 @@ public class Directory {
 	public Inode makeDir(String dirName) {
 		if(this.isWritable(new Inode(this.inodeNum))) {
 			int inodeNum = FreeSpaceMgnt.getInode();
-			Inode newDirInode = new Inode(inodeNum, 0, 0, 7, 5, 5, 'd');
+			Inode newDirInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'd');
 			String content = "d "+String.format("%03d", newDirInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
 			newDirInode.writeContent(content);
 			newDirInode.writeToDisk();
