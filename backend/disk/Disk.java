@@ -128,7 +128,7 @@ public class Disk {
 	private static void createBlocks(){
 		int noOfBlocks = Disk.noOfBlocks;
 		for(int i = 0; i < noOfBlocks; i++){
-			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i));
+			File f = new File(homeDir.toString() + "/TransDisk/" + String.format("%05d", i) + ".txt");
 			if(!f.exists()){
 				try {
 					f.createNewFile();	
@@ -136,9 +136,6 @@ public class Disk {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			}
-			else{
-				System.out.println("block present");
 			}
 		}
 	}

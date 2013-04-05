@@ -173,6 +173,18 @@ public class Directory {
 		}
 		return inodeNum;
 	}
+	public String searchDir(int inodeNum) {				//linear search
+		String entryName = null;
+		Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = this.dirContent.entrySet().iterator();
+		while(dirEntriesNavi.hasNext()) {
+			Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
+			if(pairs.getKey() == inodeNum) {
+				entryName = pairs.getValue().getName();
+				break;
+			}
+		}
+		return entryName;
+	}
 	
 	public void renameFile(int targetInodeNum, String newFileName) throws PermissionDeniedException {
 		if(this.isWritable(new Inode(this.inodeNum))) {

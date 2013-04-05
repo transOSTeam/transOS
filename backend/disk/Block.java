@@ -14,7 +14,7 @@ public class Block extends RandomAccessFile{
 		this.blockNumber = Integer.parseInt(name.substring(name.length()-5, name.length()));
 	}
 	public Block(int blockNum, String mode) throws FileNotFoundException {
-		super(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blockNum), mode);
+		super(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", blockNum) + ".txt", mode);
 		this.blockNumber = blockNum;
 	}
 	public int getBlockNumber(){
