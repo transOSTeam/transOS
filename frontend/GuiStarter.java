@@ -25,44 +25,30 @@ import javax.swing.JComponent;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import backend.TransSystem;
-import backend.User;
 import backend.disk.Directory;
 import backend.disk.Disk;
 
 public class GuiStarter {
-	JFrame mainFrame;
-	JPanel mainPanel;
-	JPanel contentPanelWest;
-	//
-	JPanel contentPanelEast;
-	JPanel loginPanel;
-	JTextField userName;
-	JTextField groupName;
-	JPasswordField password;
-	JButton loginBtn;
-	JButton regBtn;
-	//
-	JMenuBar mainMenuBar;
-	JMenu mainFileMenu;
-	JMenu newFileOrFolder;
-	JMenuItem newFile;
-	JMenuItem newFolder;
-	JPopupMenu popupMenu;
-	JPopupMenu rightClickMenu;
-	JButton rightClickedLbl;
+	private JFrame mainFrame;
+	private JPanel mainPanel;
+	private JPanel contentPanelWest;
+	private JPanel contentPanelEast;
+	private JPanel loginPanel;
+	private JTextField userName;
+	private JTextField groupName;
+	private JPasswordField password;
+	private JButton loginBtn;
+	private JButton regBtn;
+	private JMenuBar mainMenuBar;
 
 	private Map<String, JComponent> componentMap;
-	private static int rootInodeNum = 2;// get root inode number
 	private Directory rootDir;
 	
 	static int copiedInodeNum = 0;
@@ -73,17 +59,9 @@ public class GuiStarter {
 		mainFrame = new JFrame("Transparent OS");
 		mainPanel = new JPanel();
 		contentPanelWest = new JPanel();
-		//
 		contentPanelEast = new JPanel();
 		loginPanel = new JPanel();
-		//
 		mainMenuBar = new JMenuBar();
-		mainFileMenu = new JMenu("File");
-		newFileOrFolder = new JMenu("New");
-		newFile = new JMenuItem("File");
-		newFolder = new JMenuItem("Folder");
-		popupMenu = new JPopupMenu();
-		rightClickMenu = new JPopupMenu();
 		
 		componentMap = new HashMap<String, JComponent>();
 		
@@ -104,21 +82,16 @@ public class GuiStarter {
 		});
 		
 		mainPanel.setLayout(new BorderLayout());
-		//
 		mainPanel.add(loginPanel, BorderLayout.CENTER);
 		showLoginPanel();
 	}
-	
-	//
-	
+
 	private void showDesktop(){
 		loginPanel.removeAll();
 		loginPanel.repaint();
 		mainPanel.add(mainMenuBar, BorderLayout.NORTH);
 		mainPanel.add(contentPanelWest,BorderLayout.WEST);
-		//
 		mainPanel.add(contentPanelEast,BorderLayout.EAST);
-		//
 		showRoot();
 	}
 	
@@ -250,14 +223,12 @@ public class GuiStarter {
 			public void mouseExited(MouseEvent e) {}
 			public void mousePressed(MouseEvent e) {
 				if(e.isPopupTrigger()){
-					rightClickedLbl = (JButton)e.getComponent();
-					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+					
 				}
 			}
 			public void mouseReleased(MouseEvent e) {
 				if(e.isPopupTrigger()){
-					rightClickedLbl = (JButton)e.getComponent();
-					rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+					
 				}
 			}
 		});		
@@ -296,8 +267,6 @@ public class GuiStarter {
 		contentPanelWest.add(columnPanel);
 		contentPanelWest.revalidate();
 	}
-	//
-	
 	
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
