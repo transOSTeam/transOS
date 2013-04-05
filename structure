@@ -38,7 +38,7 @@ DIRECTORY STRUCTURE
 
 ______________________________________________________________________________________________________________________________
 USER-PASSWORD FILE
-UserName	PswdHash	UserId		GroupId
+UserName	PswdHash	UserId		GroupId HomeDirInode
 
 GROUP LIST FILE
 GrpName		GrpId
