@@ -3,6 +3,8 @@ package frontend;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -14,6 +16,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,6 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -36,6 +40,7 @@ import javax.swing.border.EmptyBorder;
 
 import backend.disk.DirEntry;
 import backend.disk.Directory;
+import backend.disk.Disk;
 import backend.disk.Inode;
 
 public class FolderListing extends JComponent{
@@ -44,8 +49,12 @@ public class FolderListing extends JComponent{
 	JFrame mainFrame;
 	JDialog dialog;
 	JPanel mainPanel;
-	JPanel contentPanel;
-	JPanel contentPanelSouth;
+	JPanel contentPanelWest;
+	JPanel contentPanelWestSouth;
+	//
+	JPanel contentPanelEast;
+	JPanel consolePanel;
+	//
 	JMenu menuBar;
 	String parentPath;
 	int parentInodeNum;
@@ -65,8 +74,11 @@ public class FolderListing extends JComponent{
 	
 	public FolderListing(JFrame parent,String parentFolderpath,int parentInodeNum){
 		mainPanel = new JPanel();
-		contentPanel = new JPanel();
-		contentPanelSouth = new JPanel();
+		contentPanelWest = new JPanel();
+		//
+		contentPanelEast = new JPanel();
+		//
+		contentPanelWestSouth = new JPanel();
 		menuBar = new JMenu();
 		popupMenu = new JPopupMenu();
 		rightClickMenu = new JPopupMenu();
@@ -85,13 +97,16 @@ public class FolderListing extends JComponent{
 		
 		dialog = new JDialog(parent, getPath(), false);
 		dialog.setLocationRelativeTo(parent);
-		dialog.setBounds(50, 50, 700, 600);		
+		dialog.setBounds(50, 50, 800, 600);		
 		dialog.setVisible(true);
-		
+		//
+		contentPanelEast.setPreferredSize(new Dimension(300,600));
+		//
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(menuBar,BorderLayout.NORTH);
-		mainPanel.add(contentPanel,BorderLayout.WEST);
-		mainPanel.add(contentPanelSouth,BorderLayout.SOUTH);
+		mainPanel.add(contentPanelWest,BorderLayout.WEST);
+		mainPanel.add(contentPanelEast,BorderLayout.EAST);
+		mainPanel.add(contentPanelWestSouth,BorderLayout.SOUTH);
 		mainPanel.addMouseListener(new MouseListener() {
 			public void mouseReleased(MouseEvent e) {
 				if(e.isPopupTrigger()){
@@ -115,7 +130,6 @@ public class FolderListing extends JComponent{
 			public void mouseEntered(MouseEvent arg0) {}
 			public void mouseClicked(MouseEvent arg0) {}
 		});
-		
 		dialog.add(mainPanel);
 		
 		addmenuItems();
@@ -124,66 +138,9 @@ public class FolderListing extends JComponent{
 		showExistingFoldersAndFiles();
 	}
 	
-	public FolderListing(JDialog parent,String parentFolderpath,int parentInodeNum){
-		mainPanel = new JPanel();
-		contentPanel = new JPanel();
-		contentPanelSouth = new JPanel();
-		menuBar = new JMenu();
-		popupMenu = new JPopupMenu();
-		rightClickMenu = new JPopupMenu();
-		
-		componentMap = new HashMap<String, JComponent>();
-		colPanelMap = new HashMap<String, JPanel>();
-		pnlCount = 0;
-		parentDir = new Directory(parentInodeNum);
-		dirContent = parentDir.getDirContent();
-		
-		s = new Stack<String>();
-		
-		this.parentPath = parentFolderpath;
-		this.parentInodeNum = parentInodeNum;
-		
-		dialog = new JDialog(parent, getPath() , false);
-		dialog.setLocationRelativeTo(parent);
-		dialog.setBounds(50, 50, 700, 600);
-		dialog.setVisible(true);
-		
-		
-		mainPanel.setLayout(new BorderLayout());
-		mainPanel.add(menuBar,BorderLayout.NORTH);
-		mainPanel.add(contentPanel,BorderLayout.WEST);
-		mainPanel.add(contentPanelSouth,BorderLayout.SOUTH);
-		mainPanel.addMouseListener(new MouseListener() {
-			public void mouseReleased(MouseEvent e) {
-				if(e.isPopupTrigger()){
-					if(GuiStarter.copiedInodeNum != 0){
-						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
-						item.setEnabled(true);
-					}
-					popupMenu.show(e.getComponent(), e.getX(), e.getY());
-				}
-			}
-			public void mousePressed(MouseEvent e) {
-				if(e.isPopupTrigger()){
-					if(GuiStarter.copiedInodeNum != 0){
-						JMenuItem item = (JMenuItem)popupMenu.getComponent(2);
-						item.setEnabled(true);
-					}
-					popupMenu.show(e.getComponent(), e.getX(), e.getY());
-				}
-			}
-			public void mouseExited(MouseEvent arg0) {}
-			public void mouseEntered(MouseEvent arg0) {}
-			public void mouseClicked(MouseEvent arg0) {}
-		});
-		
-		dialog.add(mainPanel);
-		
-		addmenuItems();
-		addPopupMenuItems();
-		addRightClickMenuitems();
-		showExistingFoldersAndFiles();
-	}
+	//
+	//constructor deleted
+	//
 	
 	private void addmenuItems(){
 		
@@ -217,8 +174,8 @@ public class FolderListing extends JComponent{
 					parentDir = null;
 					parentDir = new Directory(parentInodeNum);
 					dirContent = parentDir.getDirContent();
-					contentPanel.removeAll();
-					contentPanel.revalidate();
+					contentPanelWest.removeAll();
+					contentPanelWest.revalidate();
 					showExistingFoldersAndFiles();
 				}
 			}
@@ -230,8 +187,8 @@ public class FolderListing extends JComponent{
 				parentDir = null;
 				parentDir = new Directory(parentInodeNum);
 				dirContent = parentDir.getDirContent();
-				contentPanel.removeAll();
-				contentPanel.revalidate();
+				contentPanelWest.removeAll();
+				contentPanelWest.revalidate();
 				showExistingFoldersAndFiles();
 			}
 		});
@@ -258,7 +215,9 @@ public class FolderListing extends JComponent{
 				pnl.remove(tempTxt);
 				JPanel colPan = (JPanel)pnl.getParent();
 				colPan.remove(pnl);
-				contentPanel.revalidate();
+				contentPanelWest.revalidate();
+				contentPanelEast.removeAll();
+				contentPanelEast.repaint();
 			}
 			public void mouseReleased(MouseEvent e) {
 			}
@@ -430,6 +389,10 @@ public class FolderListing extends JComponent{
 					String[] temp = tempLbl.getName().split(",");
 					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 					tempTxt.setBackground(Color.LIGHT_GRAY);
+					
+					//
+					showConsoleContent(Integer.parseInt(temp[2]));
+					//
 				}
 			});
 			
@@ -480,8 +443,8 @@ public class FolderListing extends JComponent{
 			pnl.add(lbl);
 			pnl.add(txt);
 			columnPanel.add(pnl);
-			contentPanel.add(columnPanel);
-			contentPanel.revalidate();
+			contentPanelWest.add(columnPanel);
+			contentPanelWest.revalidate();
 			if(columnPanel.getComponentCount() == 6){
 				columnPanel = new JPanel();
 				columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
@@ -584,6 +547,7 @@ public class FolderListing extends JComponent{
 				String[] temp = tempLbl.getName().split(",");
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				tempTxt.setBackground(Color.LIGHT_GRAY);
+				showConsoleContent(Integer.parseInt(temp[2]));
 			}
 		});
 		
@@ -630,8 +594,8 @@ public class FolderListing extends JComponent{
 		pnl.add(lbl);
 		pnl.add(txt);
 		columnPanel.add(pnl);
-		contentPanel.add(columnPanel);
-		contentPanel.revalidate();
+		contentPanelWest.add(columnPanel);
+		contentPanelWest.revalidate();
 	}
 	
 	private void createFile(int count){
@@ -723,6 +687,7 @@ public class FolderListing extends JComponent{
 				String[] temp = tempLbl.getName().split(",");
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				tempTxt.setBackground(Color.LIGHT_GRAY);
+				showConsoleContent(Integer.parseInt(temp[2]));
 			}
 		});
 		
@@ -770,11 +735,72 @@ public class FolderListing extends JComponent{
 		pnl.add(lbl);
 		pnl.add(txt);
 		columnPanel.add(pnl);
-		contentPanel.add(columnPanel);
-		contentPanel.revalidate();
+		contentPanelWest.add(columnPanel);
+		contentPanelWest.revalidate();
 		
 	}
-	
+	//
+	private void showConsoleContent(int inodeNum){
+		contentPanelEast.removeAll();
+		Inode tempInode = new Inode(inodeNum);
+		consolePanel = new JPanel();
+		consolePanel.setLayout(new BoxLayout(consolePanel, BoxLayout.Y_AXIS));
+		int i = 0;
+		JLabel lbl = null;
+		while(i != 9){
+			if(i == 0) lbl = new JLabel("Inode Number : " + inodeNum);
+			else if(i == 1) lbl = new JLabel("File Type : " + tempInode.getFileType());
+			else if(i == 2) lbl = new JLabel("User Id : " + tempInode.getUserId());
+			else if(i == 3) lbl = new JLabel("Group Id : " + tempInode.getGrpId());
+			else if(i == 4) {
+				Timestamp t = tempInode.getAccessedTime();
+				lbl = new JLabel("Last Accessed : " + t.toString());
+			}
+			else if(i == 5){
+				Timestamp t = tempInode.getModifiedTime(); 
+				lbl = new JLabel("Last Modified : " + t.toString());
+			}
+			else if(i == 6) {
+				Timestamp t = tempInode.getCreatedTime(); 
+				lbl = new JLabel("Created On : " + t.toString());
+			}
+			else if(i == 7) lbl = new JLabel("Block Count : " + tempInode.getBlockCount());
+			
+			else if(i == 8){
+				int[] temp = tempInode.getPermissions();
+				lbl = new JLabel("Permission : " + temp[0] + "" + temp[1] + "" + temp[2]);
+			}
+			consolePanel.add(lbl);
+			i++;
+		}
+		JPanel pnl = new JPanel();
+		int blkCnt = tempInode.getBlockCount();
+		if(blkCnt <= 4){
+			int[] arr = tempInode.getBlockPointers();
+			for(i = 0;i < blkCnt;i++){
+				JButton btn = new JButton("" + arr[i]);
+				btn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent ev) {
+						JButton b = (JButton)ev.getSource();
+						File tempFile = new File(Disk.transDisk.toString() + "/" +  b.getText());
+						try {
+							Desktop.getDesktop().open(tempFile);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				});
+				pnl.add(btn);
+			}
+		}
+		else{
+		}
+		
+		consolePanel.add(pnl);
+		contentPanelEast.add(consolePanel);
+		contentPanelEast.revalidate();
+	}
+	//
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
 			return (JComponent) componentMap.get(componentName);
@@ -823,6 +849,9 @@ public class FolderListing extends JComponent{
 				s.push("/");
 			}
 			else if(temp[i].equals(".")){}
+			//
+			else if(temp[i].equals("root")){}
+			//
 			else if(temp[i].equals("..")){
 				if(!s.peek().equals("/")){
 					s.pop();
