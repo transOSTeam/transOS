@@ -123,8 +123,8 @@ public class Properties extends JComponent{
 			typeLbl.setText("Directory");
 		}
 		
-		accessedLbl.setText(tempInode.getAccessedTime());
-		modifiedLbl.setText(tempInode.getModifiedTime());
-		createdLbl.setText(tempInode.getCreatedTime());
+		accessedLbl.setText(tempInode.getAccessedTime().toString());
+		modifiedLbl.setText(tempInode.getModifiedTime().toString());
+		createdLbl.setText(tempInode.getCreatedTime().toString());
 	}
 }
