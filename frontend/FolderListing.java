@@ -38,6 +38,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import backend.PermissionDeniedException;
 import backend.disk.DirEntry;
 import backend.disk.Directory;
 import backend.disk.Disk;
@@ -83,7 +84,12 @@ public class FolderListing extends JComponent{
 		colPanelMap = new HashMap<String, JPanel>();
 		pnlCount = 0;
 		parentDir = new Directory(parentInodeNum);
-		dirContent = parentDir.getDirContent();
+		try {
+			dirContent = parentDir.getDirContent();
+		} catch (PermissionDeniedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		s = new Stack<String>();
 		
@@ -157,14 +163,29 @@ public class FolderListing extends JComponent{
 			public void actionPerformed(ActionEvent arg0) {
 				if(GuiStarter.copyFrom != parentInodeNum){
 					if(GuiStarter.cutInodeNum == GuiStarter.copiedInodeNum){
-						parentDir.move(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+						try {
+							parentDir.move(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+						} catch (PermissionDeniedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 					else{
-						parentDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+						try {
+							parentDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+						} catch (PermissionDeniedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 					parentDir = null;
 					parentDir = new Directory(parentInodeNum);
-					dirContent = parentDir.getDirContent();
+					try {
+						dirContent = parentDir.getDirContent();
+					} catch (PermissionDeniedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					contentPanelWest.removeAll();
 					contentPanelWest.revalidate();
 					showExistingFoldersAndFiles();
@@ -177,7 +198,12 @@ public class FolderListing extends JComponent{
 			public void actionPerformed(ActionEvent arg0) {
 				parentDir = null;
 				parentDir = new Directory(parentInodeNum);
-				dirContent = parentDir.getDirContent();
+				try {
+					dirContent = parentDir.getDirContent();
+				} catch (PermissionDeniedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				contentPanelWest.removeAll();
 				contentPanelWest.revalidate();
 				showExistingFoldersAndFiles();
@@ -200,7 +226,15 @@ public class FolderListing extends JComponent{
 			public void mousePressed(MouseEvent e) {
 				String[] temp = rightClickedLbl.getName().split(",");
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-				parentDir.deleteFile(Integer.parseInt(temp[2]));
+				try {
+					parentDir.deleteFile(Integer.parseInt(temp[2]));
+				} catch (NumberFormatException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (PermissionDeniedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				JPanel pnl = (JPanel)rightClickedLbl.getParent();
 				pnl.remove(rightClickedLbl);
 				pnl.remove(tempTxt);
@@ -375,7 +409,12 @@ public class FolderListing extends JComponent{
 							String fileContent = tempInode.getFileContent();
 							TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
 							mainPanel.add(txtEdit);*/
-							parentDir.editFile(inodeNum);
+							try {
+								parentDir.editFile(inodeNum);
+							} catch (PermissionDeniedException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 					}
 				}
@@ -454,7 +493,15 @@ public class FolderListing extends JComponent{
 						txt = (JTextField)e.getSource();
 						
 						String[] temp = txt.getName().split(",");
-						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());						
+						try {
+							parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
+						} catch (NumberFormatException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (PermissionDeniedException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}						
 					}
 				}
 			});
@@ -497,7 +544,13 @@ public class FolderListing extends JComponent{
 			folderName = getNewFolderName("new folder " + count++);
 		}
 		
-		Inode dirInode = parentDir.makeDir(folderName);
+		Inode dirInode = null;
+		try {
+			dirInode = parentDir.makeDir(folderName);
+		} catch (PermissionDeniedException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 		JTextField txt = new JTextField(folderName);
 		
 		try {
@@ -530,7 +583,12 @@ public class FolderListing extends JComponent{
 						String fileContent = tempInode.getFileContent();
 						TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
 						mainPanel.add(txtEdit);*/
-						parentDir.editFile(inodeNum);
+						try {
+							parentDir.editFile(inodeNum);
+						} catch (PermissionDeniedException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 				}
 			}
@@ -605,7 +663,15 @@ public class FolderListing extends JComponent{
 					txt = (JTextField)e.getSource();
 					
 					String[] temp = txt.getName().split(",");
-					parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());	
+					try {
+						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
+					} catch (NumberFormatException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (PermissionDeniedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}	
 				}
 			}
 		});	
@@ -640,7 +706,13 @@ public class FolderListing extends JComponent{
 			fileName = getNewFileName("new file " + count++);
 		}
 		
-		Inode dirInode = parentDir.makeFile(fileName, "");
+		Inode dirInode = null;
+		try {
+			dirInode = parentDir.makeFile(fileName, "");
+		} catch (PermissionDeniedException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 		JTextField txt = new JTextField(fileName);
 		
 		try {
@@ -671,7 +743,12 @@ public class FolderListing extends JComponent{
 						String fileContent = tempInode.getFileContent();
 						TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
 						mainPanel.add(txtEdit);*/
-						parentDir.editFile(inodeNum);
+						try {
+							parentDir.editFile(inodeNum);
+						} catch (PermissionDeniedException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 				}
 			}
@@ -746,7 +823,15 @@ public class FolderListing extends JComponent{
 					txt = (JTextField)e.getSource();
 					
 					String[] temp = txt.getName().split(",");
-					parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());						
+					try {
+						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
+					} catch (NumberFormatException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (PermissionDeniedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}						
 				}
 			}
 		});

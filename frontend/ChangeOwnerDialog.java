@@ -12,6 +12,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import backend.InvalidUserException;
+import backend.PermissionDeniedException;
 import backend.disk.Directory;
 
 public class ChangeOwnerDialog extends JComponent{
@@ -54,7 +57,15 @@ public class ChangeOwnerDialog extends JComponent{
 			public void actionPerformed(ActionEvent e) {
 				if(ownerName.getText().length() != 0){
 					String name = ownerName.getText();
-					parentDir.chown(inodeNum, name);
+					try {
+						parentDir.chown(inodeNum, name);
+					} catch (PermissionDeniedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (InvalidUserException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 				else{
 					ErrorDialog er = new ErrorDialog(parent, "Owner name cannot be empty");

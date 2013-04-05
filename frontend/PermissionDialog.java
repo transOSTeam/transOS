@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import backend.PermissionDeniedException;
 import backend.disk.Directory;
 
 public class PermissionDialog extends JComponent{
@@ -69,7 +70,12 @@ public class PermissionDialog extends JComponent{
 			public void actionPerformed(ActionEvent e) {
 				if(user.getText().length() != 0 && group.getText().length() != 0 && world.getText().length() != 0){
 					String permS = user.getText() + group.getText() + world.getText();
-					parentDir.chmod(inodeNum, permS);
+					try {
+						parentDir.chmod(inodeNum, permS);
+					} catch (PermissionDeniedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 				else{
 					ErrorDialog er = new ErrorDialog(parent, "Fill all the three perms");

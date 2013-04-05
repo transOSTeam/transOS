@@ -31,6 +31,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import backend.PermissionDeniedException;
 import backend.TransSystem;
 import backend.disk.Directory;
 import backend.disk.Disk;
@@ -41,6 +42,7 @@ public class GuiStarter {
 	private JPanel contentPanelWest;
 	private JPanel contentPanelEast;
 	private JPanel loginPanel;
+	private JLabel errorLabel;
 	private JTextField userName;
 	private JTextField groupName;
 	private JPasswordField password;
@@ -103,6 +105,10 @@ public class GuiStarter {
 		JLabel pwdLabel = new JLabel("Password:  ");
 		JLabel groupNameLbl = new JLabel("Group Name: ");
 		
+		JPanel pnl0 = new JPanel();
+		errorLabel = new JLabel();
+		pnl0.add(errorLabel);
+		
 		JPanel pnl1 = new JPanel();
 		userName = new JTextField();
 		userName.setPreferredSize(new Dimension(80, 20));
@@ -137,7 +143,8 @@ public class GuiStarter {
 						showDesktop();
 					}
 					else{
-						System.out.println("jhgv");
+						errorLabel.setText("Login Falied");
+						errorLabel.setForeground(Color.RED);
 					}
 				}
 			}
@@ -167,6 +174,7 @@ public class GuiStarter {
 		pnl3.add(loginBtn);
 		pnl3.add(regBtn);
 		
+		innerPanel.add(pnl0);
 		innerPanel.add(pnl1);
 		innerPanel.add(pnl2);
 		innerPanel.add(pnl4);
@@ -179,6 +187,11 @@ public class GuiStarter {
 		BufferedImage img = null;
 		JButton lbl;
 		String folderName = "root";
+		
+		int homeInodeNum = TransSystem.getUser().getHomeDirInodeNum();
+		Directory root = new Directory(2);
+		folderName = root.searchDir(homeInodeNum);
+		
 		
 		JPanel columnPanel = null;
 		columnPanel = new JPanel();
@@ -200,7 +213,7 @@ public class GuiStarter {
 		lbl = new JButton(new ImageIcon(img));
 		lbl.setBorder(BorderFactory.createEmptyBorder());
 		lbl.setContentAreaFilled(false);
-		String lblName = "lbl,d," + TransSystem.getUser().getHomeDirInodeNum();
+		String lblName = "lbl,d," + homeInodeNum;
 		lbl.setName(lblName);
 		lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(lblName, lbl);		
@@ -215,7 +228,12 @@ public class GuiStarter {
 					}
 					else if(temp[1].equals("r")){
 						int inodeNum = Integer.parseInt(temp[2]);
-						rootDir.editFile(inodeNum);
+						try {
+							rootDir.editFile(inodeNum);
+						} catch (PermissionDeniedException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 				}
 			}
@@ -256,7 +274,7 @@ public class GuiStarter {
 		txt.setBackground(mainPanel.getBackground());
 		txt.setDisabledTextColor(Color.BLACK);
 		txt.setBorder(null);
-		String txtName = "txt,d," + TransSystem.getUser().getHomeDirInodeNum();
+		String txtName = "txt,d," + homeInodeNum;
 		txt.setName(txtName);
 		txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 		componentMap.put(txtName, txt);
