@@ -232,13 +232,13 @@ public class Inode {
 			this.blockPointers[4] = tempBlock.getBlockNumber();
 			Block indirectPointerBlk = null;
 			try {
-				indirectPointerBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", this.blockPointers[4]), "rw");
+				indirectPointerBlk = new Block(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", this.blockPointers[4]) + ".txt", "rw");
 			} catch (FileNotFoundException e1) {
 				e1.printStackTrace();
 			}
 			while(noOfBlocksReq > 0) {
 				tempBlockNo = FreeSpaceMgnt.getBlockNo();
-				File tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo));
+				File tempBlockFile1 = new File(Disk.homeDir.toString() + "/TransDisk/" + String.format("%05d", tempBlockNo) + ".txt");
 				if(tempBlockFile1.exists())
 					tempBlockFile1.delete();
 				try {
