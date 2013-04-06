@@ -59,6 +59,7 @@ public class ChangeOwnerDialog extends JComponent{
 					String name = ownerName.getText();
 					try {
 						parentDir.chown(inodeNum, name);
+						dialog.dispose();
 					} catch (PermissionDeniedException e1) {
 						ErrorDialog er = new ErrorDialog(parent, "Permission denied!!");
 						mainPanel.add(er);
