@@ -14,6 +14,7 @@
 ## Getting Started
 - Compile and run the project.
 - Login the system using default user `root` and password `root123`.
+- Have a look at [TransOS wiki](https://github.com/transOSTeam/transOS/wiki) for detailed how-to and complete documentation.
 
 ## License (The MIT License (MIT))
     Copyright (c) 2013 Anurag Peshne, Harshad Mulmuley
