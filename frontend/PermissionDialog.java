@@ -72,6 +72,7 @@ public class PermissionDialog extends JComponent{
 					String permS = user.getText() + group.getText() + world.getText();
 					try {
 						parentDir.chmod(inodeNum, permS);
+						dialog.dispose();
 					} catch (PermissionDeniedException e1) {
 						ErrorDialog er = new ErrorDialog(parent, "Permission denied!!");
 						mainPanel.add(er);

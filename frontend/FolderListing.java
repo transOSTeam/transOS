@@ -205,15 +205,15 @@ public class FolderListing extends JComponent{
 				parentDir = new Directory(parentInodeNum);
 				try {
 					dirContent = parentDir.getDirContent();
+					contentPanelWest.removeAll();
+					contentPanelWest.revalidate();
+					contentPanelWest.repaint();
+					showExistingFoldersAndFiles();
 				} catch (PermissionDeniedException e) {
 					ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 					mainPanel.add(er);
 					e.printStackTrace();
 				}
-				contentPanelWest.removeAll();
-				contentPanelWest.revalidate();
-				contentPanelWest.repaint();
-				showExistingFoldersAndFiles();
 			}
 		});
 		popupMenu.add(item1);
@@ -235,6 +235,14 @@ public class FolderListing extends JComponent{
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				try {
 					parentDir.deleteFile(Integer.parseInt(temp[2]));
+					JPanel pnl = (JPanel)rightClickedLbl.getParent();
+					pnl.remove(rightClickedLbl);
+					pnl.remove(tempTxt);
+					JPanel colPan = (JPanel)pnl.getParent();
+					colPan.remove(pnl);
+					contentPanelWest.revalidate();
+					contentPanelEast.removeAll();
+					contentPanelEast.repaint();
 				} catch (NumberFormatException e1) {
 					ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
 					mainPanel.add(er);
@@ -244,14 +252,6 @@ public class FolderListing extends JComponent{
 					mainPanel.add(er);
 					e1.printStackTrace();
 				}
-				JPanel pnl = (JPanel)rightClickedLbl.getParent();
-				pnl.remove(rightClickedLbl);
-				pnl.remove(tempTxt);
-				JPanel colPan = (JPanel)pnl.getParent();
-				colPan.remove(pnl);
-				contentPanelWest.revalidate();
-				contentPanelEast.removeAll();
-				contentPanelEast.repaint();
 			}
 			public void mouseReleased(MouseEvent e) {
 			}
@@ -891,6 +891,8 @@ public class FolderListing extends JComponent{
 		});
 		consolePanel.add(showFreeBlkButton);
 		consolePanel.add(showFreeInodesButton);
+		JLabel l = new JLabel("---------------------");
+		consolePanel.add(l);
 		int i = 0;
 		JLabel lbl = null;
 		while(i != 9){
@@ -919,7 +921,16 @@ public class FolderListing extends JComponent{
 			consolePanel.add(lbl);
 			i++;
 		}
+		
+		JLabel l1 = new JLabel("---------------------");
+		consolePanel.add(l1);
+
 		int blkCnt = tempInode.getBlockCount();
+		if(blkCnt > 0){
+			JLabel l2 = new JLabel("Block Pointers");
+			consolePanel.add(l2);
+		}
+		
 		if(blkCnt <= 4){
 			int[] arr = tempInode.getBlockPointers();
 			for(i = 0;i < blkCnt;i++){
