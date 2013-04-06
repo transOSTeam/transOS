@@ -42,6 +42,7 @@ import backend.PermissionDeniedException;
 import backend.disk.DirEntry;
 import backend.disk.Directory;
 import backend.disk.Disk;
+import backend.disk.FreeSpaceMgnt;
 import backend.disk.Inode;
 
 public class FolderListing extends JComponent{
@@ -850,6 +851,27 @@ public class FolderListing extends JComponent{
 		final Inode tempInode = new Inode(inodeNum);
 		consolePanel = new JPanel();
 		consolePanel.setLayout(new BoxLayout(consolePanel, BoxLayout.Y_AXIS));
+		JButton showFreeBlkButton = new JButton("Free Blocks");
+		JButton showFreeInodesButton = new JButton("Free Inodes");
+		
+		showFreeBlkButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				UsageBitmap bitmapDialog = new UsageBitmap(mainFrame, FreeSpaceMgnt.getBlockBitmap(), "Free Blocks");
+				mainPanel.add(bitmapDialog);
+			}
+		});
+		showFreeInodesButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				UsageBitmap bitmapDialog = new UsageBitmap(mainFrame, FreeSpaceMgnt.getInodeBitmap(), "Free Inodes");
+				mainPanel.add(bitmapDialog);
+			}
+		});
+		consolePanel.add(showFreeBlkButton);
+		consolePanel.add(showFreeInodesButton);
 		int i = 0;
 		JLabel lbl = null;
 		while(i != 9){

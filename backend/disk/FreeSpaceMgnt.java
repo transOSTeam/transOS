@@ -165,4 +165,22 @@ public class FreeSpaceMgnt {
 		FreeSpaceMgnt.freeInodeBitmap[victimInodeNo] = 0;
 		dirtyBuffer[0] = 1;
 	}
+	public static byte[] getBlockBitmap() {
+		return FreeSpaceMgnt.freeBlockBitmap;
+	}
+	public static byte[] getInodeBitmap() {
+		return FreeSpaceMgnt.freeInodeBitmap;
+	}
+	public static boolean isBlockBitmapDirty() {
+		if(dirtyBuffer[1] == 1)
+			return true;
+		else
+			return false;
+	}
+	public static boolean isInodeBitmapDirty() {
+		if(dirtyBuffer[0] == 1)
+			return true;
+		else
+			return false;
+	}
 }

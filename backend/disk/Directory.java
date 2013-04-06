@@ -80,8 +80,10 @@ public class Directory {
 				int i = 0;
 				while(dirEntriesNavi.hasNext()) {
 					Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
-					if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 )
+					if(pairs.getValue().getName().compareTo(".") != 0 && pairs.getValue().getName().compareTo("..") != 0 ) {
 						tempInode[i++] = pairs.getKey();
+						System.out.println(pairs.getValue().getName());
+					}
 				}
 				for(int tempI : tempInode) {
 					victimDir.deleteFile(tempI);
@@ -187,6 +189,7 @@ public class Directory {
 	
 	public void renameFile(int targetInodeNum, String newFileName) throws PermissionDeniedException {
 		if(this.isWritable(new Inode(this.inodeNum))) {
+			System.out.println("@rename");
 			this.dirContent.remove(targetInodeNum);
 			this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), 'd'));
 			this.writeToDisk();
