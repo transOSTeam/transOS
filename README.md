@@ -1,4 +1,33 @@
-transOS
-=======
+# TransOS
 
-transOS Transparent Operating System is a project aimed to help in classroom teaching of Operating System Course. This project gives insight at internal working of OS and gives transparent view of major Kernel Datastructures.
+"TransOS (Transparent Operating System) is a project aimed to help in classroom teaching of Operating System Course."
+
+## Overview
+- The basic motive is to give insight of internal working of OS.
+- This project emulates working of Operating System on real operating system using plain `text files`. Thus students can view kernel datastructures such as Inodes, Folder Structure, Super Block and distribution of data among blocks.
+
+## Requirements
+- TransOS is built using Java and you will need Java version 7 to run it correctly since `WatchService` for filesystem is used.
+- TransOS should work fine on all major host OS but there might be some issues editing a file in TransOS since it involves use of `WatchService` which is platform dependent. We have tested it on Ubuntu 12.10 and Windows 7.
+- System Default text editor.
+
+## Getting Started
+- Compile and run the project.
+- Login the system using default user `root` and password `root123`.
+
+## License (The MIT License (MIT))
+    Copyright (c) 2013 Anurag Peshne, Harshad Mulmuley
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+    documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+    to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+    the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+    THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
