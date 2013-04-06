@@ -140,6 +140,8 @@ public class Inode {
 	}
 	public void writeToDisk() {
 		if(this.isDirty == 1) {
+			java.util.Date date= new java.util.Date();
+			this.modifyTime = new Timestamp(date.getTime());
 			Block inodeB = this.getBlock();
 			String content;
 			try {
@@ -343,9 +345,11 @@ public class Inode {
 	}
 	public void setPermissions(int[] perm) {
 		this.permission = perm;
+		this.isDirty = 1;
 	}
 	public void setUserId(int newUserId) {
 		this.userId = newUserId;
+		this.isDirty = 1;
 	}
 	public ArrayList<Integer> getIndirectBlocks() {
 		ArrayList<Integer> pointers = null;

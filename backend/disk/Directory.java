@@ -320,6 +320,7 @@ public class Directory {
 				perm[i] = Integer.parseInt(permS.substring(i, i+1));
 			}
 			targetInode.setPermissions(perm);
+			targetInode.writeToDisk();
 		}
 		else
 			throw new PermissionDeniedException();
@@ -330,6 +331,7 @@ public class Directory {
 			int newUserId = User.getUserId(newUser);
 			if(newUserId > 0) {
 				targetInode.setUserId(newUserId);
+				targetInode.writeToDisk();
 			}
 			else
 				throw new InvalidUserException();
