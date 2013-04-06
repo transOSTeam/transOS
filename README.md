@@ -12,7 +12,7 @@
 - System Default text editor.
 
 ## Getting Started
-- Compile and run the project.
+- Compile and run the project using JDK 7 or higher.
 - Login the system using default user `root` and password `root123`.
 - Have a look at [TransOS wiki](https://github.com/transOSTeam/transOS/wiki) for detailed how-to and complete documentation.
 
