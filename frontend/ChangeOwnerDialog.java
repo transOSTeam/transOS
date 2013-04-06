@@ -60,10 +60,12 @@ public class ChangeOwnerDialog extends JComponent{
 					try {
 						parentDir.chown(inodeNum, name);
 					} catch (PermissionDeniedException e1) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(parent, "Permission denied!!");
+						mainPanel.add(er);
 						e1.printStackTrace();
 					} catch (InvalidUserException e1) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(parent, "Invalid user!");
+						mainPanel.add(er);
 						e1.printStackTrace();
 					}
 				}
