@@ -88,7 +88,8 @@ public class FolderListing extends JComponent{
 		try {
 			dirContent = parentDir.getDirContent();
 		} catch (PermissionDeniedException e1) {
-			// TODO Auto-generated catch block
+			ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+			mainPanel.add(er);
 			e1.printStackTrace();
 		}
 		
@@ -167,7 +168,8 @@ public class FolderListing extends JComponent{
 						try {
 							parentDir.move(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
 						} catch (PermissionDeniedException e) {
-							// TODO Auto-generated catch block
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+							mainPanel.add(er);
 							e.printStackTrace();
 						}
 					}
@@ -175,7 +177,8 @@ public class FolderListing extends JComponent{
 						try {
 							parentDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
 						} catch (PermissionDeniedException e) {
-							// TODO Auto-generated catch block
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+							mainPanel.add(er);
 							e.printStackTrace();
 						}
 					}
@@ -184,7 +187,8 @@ public class FolderListing extends JComponent{
 					try {
 						dirContent = parentDir.getDirContent();
 					} catch (PermissionDeniedException e) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+						mainPanel.add(er);
 						e.printStackTrace();
 					}
 					contentPanelWest.removeAll();
@@ -202,11 +206,13 @@ public class FolderListing extends JComponent{
 				try {
 					dirContent = parentDir.getDirContent();
 				} catch (PermissionDeniedException e) {
-					// TODO Auto-generated catch block
+					ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+					mainPanel.add(er);
 					e.printStackTrace();
 				}
 				contentPanelWest.removeAll();
 				contentPanelWest.revalidate();
+				contentPanelWest.repaint();
 				showExistingFoldersAndFiles();
 			}
 		});
@@ -230,10 +236,12 @@ public class FolderListing extends JComponent{
 				try {
 					parentDir.deleteFile(Integer.parseInt(temp[2]));
 				} catch (NumberFormatException e1) {
-					// TODO Auto-generated catch block
+					ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
+					mainPanel.add(er);
 					e1.printStackTrace();
 				} catch (PermissionDeniedException e1) {
-					// TODO Auto-generated catch block
+					ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+					mainPanel.add(er);
 					e1.printStackTrace();
 				}
 				JPanel pnl = (JPanel)rightClickedLbl.getParent();
@@ -413,7 +421,8 @@ public class FolderListing extends JComponent{
 							try {
 								parentDir.editFile(inodeNum);
 							} catch (PermissionDeniedException e1) {
-								// TODO Auto-generated catch block
+								ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+								mainPanel.add(er);
 								e1.printStackTrace();
 							}
 						}
@@ -497,10 +506,12 @@ public class FolderListing extends JComponent{
 						try {
 							parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
 						} catch (NumberFormatException e1) {
-							// TODO Auto-generated catch block
+							ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
+							mainPanel.add(er);
 							e1.printStackTrace();
 						} catch (PermissionDeniedException e1) {
-							// TODO Auto-generated catch block
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+							mainPanel.add(er);
 							e1.printStackTrace();
 						}						
 					}
@@ -549,7 +560,8 @@ public class FolderListing extends JComponent{
 		try {
 			dirInode = parentDir.makeDir(folderName);
 		} catch (PermissionDeniedException e2) {
-			// TODO Auto-generated catch block
+			ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+			mainPanel.add(er);
 			e2.printStackTrace();
 		}
 		JTextField txt = new JTextField(folderName);
@@ -587,7 +599,8 @@ public class FolderListing extends JComponent{
 						try {
 							parentDir.editFile(inodeNum);
 						} catch (PermissionDeniedException e1) {
-							// TODO Auto-generated catch block
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+							mainPanel.add(er);
 							e1.printStackTrace();
 						}
 					}
@@ -667,10 +680,12 @@ public class FolderListing extends JComponent{
 					try {
 						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
 					} catch (NumberFormatException e1) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
+						mainPanel.add(er);
 						e1.printStackTrace();
 					} catch (PermissionDeniedException e1) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+						mainPanel.add(er);
 						e1.printStackTrace();
 					}	
 				}
@@ -711,7 +726,8 @@ public class FolderListing extends JComponent{
 		try {
 			dirInode = parentDir.makeFile(fileName, "");
 		} catch (PermissionDeniedException e2) {
-			// TODO Auto-generated catch block
+			ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+			mainPanel.add(er);
 			e2.printStackTrace();
 		}
 		JTextField txt = new JTextField(fileName);
@@ -747,7 +763,8 @@ public class FolderListing extends JComponent{
 						try {
 							parentDir.editFile(inodeNum);
 						} catch (PermissionDeniedException e1) {
-							// TODO Auto-generated catch block
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+							mainPanel.add(er);
 							e1.printStackTrace();
 						}
 					}
@@ -827,10 +844,12 @@ public class FolderListing extends JComponent{
 					try {
 						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
 					} catch (NumberFormatException e1) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
+						mainPanel.add(er);
 						e1.printStackTrace();
 					} catch (PermissionDeniedException e1) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+						mainPanel.add(er);
 						e1.printStackTrace();
 					}						
 				}

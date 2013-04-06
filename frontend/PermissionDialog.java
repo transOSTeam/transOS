@@ -73,7 +73,8 @@ public class PermissionDialog extends JComponent{
 					try {
 						parentDir.chmod(inodeNum, permS);
 					} catch (PermissionDeniedException e1) {
-						// TODO Auto-generated catch block
+						ErrorDialog er = new ErrorDialog(parent, "Permission denied!!");
+						mainPanel.add(er);
 						e1.printStackTrace();
 					}
 				}

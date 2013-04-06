@@ -231,7 +231,8 @@ public class GuiStarter {
 						try {
 							rootDir.editFile(inodeNum);
 						} catch (PermissionDeniedException e1) {
-							// TODO Auto-generated catch block
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+							mainPanel.add(er);
 							e1.printStackTrace();
 						}
 					}
