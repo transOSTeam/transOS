@@ -189,9 +189,9 @@ public class Directory {
 	
 	public void renameFile(int targetInodeNum, String newFileName) throws PermissionDeniedException {
 		if(this.isWritable(new Inode(this.inodeNum))) {
-			System.out.println("@rename");
+			DirEntry tempEntry = this.dirContent.get(targetInodeNum);
 			this.dirContent.remove(targetInodeNum);
-			this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), 'd'));
+			this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), tempEntry.getType()));
 			this.writeToDisk();
 		}
 		else
@@ -293,7 +293,7 @@ public class Directory {
 	
 	public void editFile(int fileInodeNum) throws PermissionDeniedException {
 		Inode fileInode = new Inode(fileInodeNum);
-		if(this.isWritable(fileInode)) {
+		if(this.isReadable(fileInode)) {
 			if(fileInode.getFileType() == 'r') {
 				File tempFile = null;
 				String content = fileInode.getFileContent();
