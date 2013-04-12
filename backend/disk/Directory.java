@@ -302,10 +302,6 @@ public class Directory {
 	public void editFile(int fileInodeNum) throws PermissionDeniedException, FileNotFoundException {
 		Inode fileInode = new Inode(fileInodeNum);
 		if(this.isReadable(fileInode)) {
-			if(fileInode.getFileType() == 's') {			//file is soft link
-				String path = fileInode.getFileContent();
-				fileInode = this.parsePath(path);
-			}
 			if(fileInode.getFileType() == 'r') {
 				File tempFile = null;
 				String content = fileInode.getFileContent();
@@ -387,6 +383,11 @@ public class Directory {
 		DirEntry oldSoftLinkEntry = this.dirContent.remove(softLinkInode.getInodeNum());
 		this.dirContent.put(softLinkInode.getInodeNum(), new DirEntry(oldSoftLinkEntry.getName(), 's'));
 		return softLinkInode;
-		
+	}
+	public Inode openSoftLink(int linkInodeNum) throws FileNotFoundException {			//return targetFile inode: test if dir or file and then do the necessary
+		Inode linkInode = new Inode(linkInodeNum);
+		String filePath = linkInode.getFileContent();
+		Inode fileInode = this.parsePath(filePath);
+		return fileInode;
 	}
 }
