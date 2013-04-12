@@ -299,9 +299,13 @@ public class Directory {
 			throw new PermissionDeniedException();
 	}
 	
-	public void editFile(int fileInodeNum) throws PermissionDeniedException {
+	public void editFile(int fileInodeNum) throws PermissionDeniedException, FileNotFoundException {
 		Inode fileInode = new Inode(fileInodeNum);
 		if(this.isReadable(fileInode)) {
+			if(fileInode.getFileType() == 's') {			//file is soft link
+				String path = fileInode.getFileContent();
+				fileInode = this.parsePath(path);
+			}
 			if(fileInode.getFileType() == 'r') {
 				File tempFile = null;
 				String content = fileInode.getFileContent();
