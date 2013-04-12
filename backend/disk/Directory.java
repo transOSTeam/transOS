@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import backend.InvalidUserException;
+import backend.OperationNotPermittedException;
 import backend.PermissionDeniedException;
 import backend.TransSystem;
 import backend.User;
@@ -89,9 +90,12 @@ public class Directory {
 					victimDir.deleteFile(tempI);
 				}
 			}
-			victimInode.releaseBlocks();
-			FreeSpaceMgnt.consumeInode(victimInodeNo);
-			this.dirContent.remove(victimInodeNo);
+			victimInode.hardLinkmm();			//hardLinkCount--
+			if(victimInode.getHardLinkCount() == 0) {
+				victimInode.releaseBlocks();
+				FreeSpaceMgnt.consumeInode(victimInodeNo);
+				this.dirContent.remove(victimInodeNo);
+			}
 			this.writeToDisk();
 		}
 		else
@@ -162,7 +166,7 @@ public class Directory {
 		}
 	}
 	
-	public int searchDir(String name) {				//linear search
+	public int searchDir(String name) throws FileNotFoundException {				//linear search
 		int inodeNum = 0;
 		Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = this.dirContent.entrySet().iterator();
 		while(dirEntriesNavi.hasNext()) {
@@ -172,9 +176,11 @@ public class Directory {
 				break;
 			}
 		}
+		if(inodeNum == 0)
+			throw new FileNotFoundException();
 		return inodeNum;
 	}
-	public String searchDir(int inodeNum) {				//linear search
+	public String searchDir(int inodeNum) throws FileNotFoundException {				//linear search
 		String entryName = null;
 		Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = this.dirContent.entrySet().iterator();
 		while(dirEntriesNavi.hasNext()) {
@@ -184,6 +190,8 @@ public class Directory {
 				break;
 			}
 		}
+		if(entryName == null)
+			throw new FileNotFoundException();
 		return entryName;
 	}
 	
@@ -338,5 +346,43 @@ public class Directory {
 		}
 		else
 			throw new PermissionDeniedException();
+	}
+	public void makeHardLink(String targetPath) throws FileNotFoundException, OperationNotPermittedException {
+		Inode targetInode = this.parsePath(targetPath);
+		targetInode.hardLinkpp();				//hardLinkCount++;
+		targetInode.writeToDisk();
+		
+		String[] splitPath = targetPath.split("/");
+		String name = splitPath[splitPath.length - 1];
+		try {
+			this.searchDir(name);
+			throw new OperationNotPermittedException();
+		} catch(FileNotFoundException e) {
+			this.dirContent.put(targetInode.getInodeNum(), new DirEntry(name, targetInode.getFileType()));
+		}
+	}
+
+	private Inode parsePath(String targetPath) throws FileNotFoundException{
+		String[] splitPath = targetPath.split("/");
+		Inode tempInode = new Inode(2);
+		Directory tempDir = new Directory(2);
+		for( String temp : splitPath) {
+			if(temp.compareTo("") != 0) {
+				tempInode = new Inode(tempDir.searchDir(temp));
+				if(tempInode.getFileType() == 'd')
+					tempDir = new Directory(tempInode.getInodeNum());
+			}
+		}
+		return tempInode;
+	}
+	public Inode makeSoftLink(String targetPath) throws FileNotFoundException, PermissionDeniedException {
+		Inode softLinkInode = null;
+		String[] pathSplit = targetPath.split("/");
+		String fileName = pathSplit[pathSplit.length - 1];
+		softLinkInode = this.makeFile("shortcut to " + fileName, targetPath);
+		DirEntry oldSoftLinkEntry = this.dirContent.remove(softLinkInode.getInodeNum());
+		this.dirContent.put(softLinkInode.getInodeNum(), new DirEntry(oldSoftLinkEntry.getName(), 's'));
+		return softLinkInode;
+		
 	}
 }

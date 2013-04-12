@@ -94,7 +94,7 @@ public class Inode {
 		this.signature = 1;
 		this.inodeNumber = inodeNum;
 		this.refCount = 0;
-		this.hardLinkCount = 0;
+		this.hardLinkCount = 1;
 		java.util.Date date= new java.util.Date();
 		this.createdTime = this.modifyTime = this.accessedTime = new Timestamp(date.getTime());
 		blockPointers = new int[5];
@@ -370,5 +370,14 @@ public class Inode {
 			
 		}
 		return pointers;
+	}
+	public void hardLinkpp() {
+		this.hardLinkCount++;
+	}
+	public void hardLinkmm() {
+		this.hardLinkCount--;
+	}
+	public int getHardLinkCount() {
+		return this.hardLinkCount;
 	}
 }
