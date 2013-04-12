@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -38,6 +39,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import backend.OperationNotPermittedException;
 import backend.PermissionDeniedException;
 import backend.disk.DirEntry;
 import backend.disk.Directory;
@@ -64,7 +66,7 @@ public class FolderListing extends JComponent{
 	
 	private Map<String, JComponent> componentMap;
 	private Map<String, JPanel> colPanelMap;
-	private Directory parentDir;
+	private Directory thisDir;
 	private HashMap<Integer, DirEntry> dirContent;
 	private int count = 0;
 	private int count1 = 0;
@@ -84,9 +86,9 @@ public class FolderListing extends JComponent{
 		componentMap = new HashMap<String, JComponent>();
 		colPanelMap = new HashMap<String, JPanel>();
 		pnlCount = 0;
-		parentDir = new Directory(parentInodeNum);
+		thisDir = new Directory(parentInodeNum);
 		try {
-			dirContent = parentDir.getDirContent();
+			dirContent = thisDir.getDirContent();
 		} catch (PermissionDeniedException e1) {
 			ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 			mainPanel.add(er);
@@ -166,7 +168,7 @@ public class FolderListing extends JComponent{
 				if(GuiStarter.copyFrom != parentInodeNum){
 					if(GuiStarter.cutInodeNum == GuiStarter.copiedInodeNum){
 						try {
-							parentDir.move(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+							thisDir.move(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
 						} catch (PermissionDeniedException e) {
 							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 							mainPanel.add(er);
@@ -175,17 +177,17 @@ public class FolderListing extends JComponent{
 					}
 					else{
 						try {
-							parentDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
+							thisDir.copy(GuiStarter.copiedInodeNum, GuiStarter.copyFrom);
 						} catch (PermissionDeniedException e) {
 							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 							mainPanel.add(er);
 							e.printStackTrace();
 						}
 					}
-					parentDir = null;
-					parentDir = new Directory(parentInodeNum);
+					thisDir = null;
+					thisDir = new Directory(parentInodeNum);
 					try {
-						dirContent = parentDir.getDirContent();
+						dirContent = thisDir.getDirContent();
 					} catch (PermissionDeniedException e) {
 						ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 						mainPanel.add(er);
@@ -201,10 +203,10 @@ public class FolderListing extends JComponent{
 		JMenuItem item4 = new JMenuItem("Refresh");
 		item4.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parentDir = null;
-				parentDir = new Directory(parentInodeNum);
+				thisDir = null;
+				thisDir = new Directory(parentInodeNum);
 				try {
-					dirContent = parentDir.getDirContent();
+					dirContent = thisDir.getDirContent();
 					contentPanelWest.removeAll();
 					contentPanelWest.revalidate();
 					contentPanelWest.repaint();
@@ -216,11 +218,90 @@ public class FolderListing extends JComponent{
 				}
 			}
 		});
+		
+		JMenuItem item5 = new JMenuItem("Create hardlink here");
+		item5.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				GetTargetPathDialog d = new GetTargetPathDialog(mainFrame);
+				mainPanel.add(d);
+				if(GuiStarter.linkPath.compareTo("") != 0){
+					try {
+						thisDir.makeHardLink(GuiStarter.linkPath);
+					} catch (FileNotFoundException e1) {
+						ErrorDialog er = new ErrorDialog(mainFrame, "File not found!!");
+						mainPanel.add(er);
+						e1.printStackTrace();
+					} catch (OperationNotPermittedException e1) {
+						ErrorDialog er = new ErrorDialog(mainFrame, "This operation is not permitted");
+						mainPanel.add(er);
+						e1.printStackTrace();
+					}
+					thisDir = null;
+					thisDir = new Directory(parentInodeNum);
+					try {
+						dirContent = thisDir.getDirContent();
+					} catch (PermissionDeniedException e1) {
+						ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+						mainPanel.add(er);
+						e1.printStackTrace();
+					}
+					contentPanelWest.removeAll();
+					contentPanelWest.revalidate();
+					showExistingFoldersAndFiles();
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		
+		JMenuItem item6 = new JMenuItem("Create softlink here");
+		item6.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				GetTargetPathDialog d = new GetTargetPathDialog(mainFrame);
+				if(GuiStarter.linkPath.compareTo("") != 0){
+					mainPanel.add(d);
+					if(GuiStarter.linkPath.compareTo("") != 0){
+						try {
+							thisDir.makeSoftLink(GuiStarter.linkPath);
+						} catch (FileNotFoundException e1) {
+							ErrorDialog er = new ErrorDialog(mainFrame, "File not found!!");
+							mainPanel.add(er);
+							e1.printStackTrace();
+						} catch (PermissionDeniedException e1) {
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied");
+							mainPanel.add(er);
+							e1.printStackTrace();
+						}
+						thisDir = null;
+						thisDir = new Directory(parentInodeNum);
+						try {
+							dirContent = thisDir.getDirContent();
+						} catch (PermissionDeniedException e1) {
+							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+							mainPanel.add(er);
+							e1.printStackTrace();
+						}
+						contentPanelWest.removeAll();
+						contentPanelWest.revalidate();
+						showExistingFoldersAndFiles();
+					}
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
 		popupMenu.add(item1);
 		popupMenu.add(item2);
 		popupMenu.add(item3);
 		popupMenu.add(item4);
-		
+		popupMenu.add(item5);
+		popupMenu.add(item6);
 		item3.setEnabled(false);
 	}
 	
@@ -234,7 +315,7 @@ public class FolderListing extends JComponent{
 				String[] temp = rightClickedLbl.getName().split(",");
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				try {
-					parentDir.deleteFile(Integer.parseInt(temp[2]));
+					thisDir.deleteFile(Integer.parseInt(temp[2]));
 					JPanel pnl = (JPanel)rightClickedLbl.getParent();
 					pnl.remove(rightClickedLbl);
 					pnl.remove(tempTxt);
@@ -307,7 +388,7 @@ public class FolderListing extends JComponent{
 			public void mouseExited(MouseEvent e) {}
 			public void mousePressed(MouseEvent e) {
 				String[] temp = rightClickedLbl.getName().split(",");
-				rightClickedLbl.setIcon(new ImageIcon("folder_light.gif"));
+				rightClickedLbl.setIcon(new ImageIcon("folder.gif"));
 				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
 				tempTxt.setBackground(Color.LIGHT_GRAY);
 				GuiStarter.copiedInodeNum = Integer.parseInt(temp[2]);
@@ -325,7 +406,7 @@ public class FolderListing extends JComponent{
 			public void mouseExited(MouseEvent e) {}
 			public void mousePressed(MouseEvent e) {
 				String[] temp = rightClickedLbl.getName().split(",");
-				PermissionDialog p = new PermissionDialog(mainFrame, parentDir,Integer.parseInt(temp[2]));
+				PermissionDialog p = new PermissionDialog(mainFrame, thisDir,Integer.parseInt(temp[2]));
 				mainPanel.add(p);
 			}
 			public void mouseReleased(MouseEvent e) {
@@ -339,7 +420,7 @@ public class FolderListing extends JComponent{
 			public void mouseExited(MouseEvent e) {}
 			public void mousePressed(MouseEvent e) {
 				String[] temp = rightClickedLbl.getName().split(",");
-				ChangeOwnerDialog c = new ChangeOwnerDialog(mainFrame, parentDir,Integer.parseInt(temp[2]));
+				ChangeOwnerDialog c = new ChangeOwnerDialog(mainFrame, thisDir,Integer.parseInt(temp[2]));
 				mainPanel.add(c);
 			}
 			public void mouseReleased(MouseEvent e) {
@@ -390,13 +471,52 @@ public class FolderListing extends JComponent{
 					e1.printStackTrace();
 				}
 			}
+			else if(tempDirEntry.getType() == 's'){
+				try {
+					Inode i = thisDir.openSoftLink(entry.getKey());
+					if(i.getFileType() == 'd'){
+						try {
+							img = ImageIO.read(new File("folder.gif"));
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+					else if(i.getFileType() == 'r'){
+						try {
+							img = ImageIO.read(new File("folder_light.gif"));
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
 			
 			lbl = new JButton(new ImageIcon(img));
 			lbl.setBorder(BorderFactory.createEmptyBorder());
 			lbl.setContentAreaFilled(false);
-			String lblName = "lbl,d," + entry.getKey().toString();
-			if(tempDirEntry.getType() == 'r'){
-				lblName = "lbl,r," + entry.getKey().toString();
+			String lblName = "";
+			if(tempDirEntry.getType() == 's'){
+				try {
+					Inode i = thisDir.openSoftLink(entry.getKey());
+					if(i.getFileType() == 'd'){
+						lblName = "lbl,d," + i.getInodeNum();
+					}
+					else if(i.getFileType() == 'r'){
+						lblName = "lbl,r," + i.getInodeNum();
+					}
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			else{
+				lblName = "lbl,d," + entry.getKey().toString();
+				if(tempDirEntry.getType() == 'r'){
+					lblName = "lbl,r," + entry.getKey().toString();
+				}
 			}
 			lbl.setName(lblName);
 			lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -419,10 +539,13 @@ public class FolderListing extends JComponent{
 							TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
 							mainPanel.add(txtEdit);*/
 							try {
-								parentDir.editFile(inodeNum);
+								thisDir.editFile(inodeNum);
 							} catch (PermissionDeniedException e1) {
 								ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 								mainPanel.add(er);
+								e1.printStackTrace();
+							} catch (FileNotFoundException e1) {
+								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 						}
@@ -469,9 +592,26 @@ public class FolderListing extends JComponent{
 			txt.setBackground(mainPanel.getBackground());
 			txt.setDisabledTextColor(Color.BLACK);
 			txt.setBorder(null);
-			String txtName = "txt,d," + entry.getKey().toString();
-			if(tempDirEntry.getType() == 'r'){
-				txtName = "txt,r," + entry.getKey().toString();
+			String txtName = "";
+			if(tempDirEntry.getType() == 's'){
+				try {
+					Inode i = thisDir.openSoftLink(entry.getKey());
+					if(i.getFileType() == 'd'){
+						txtName = "txt,d," + i.getInodeNum();
+					}
+					else if(i.getFileType() == 'r'){
+						txtName = "txt,r," + i.getInodeNum();
+					}
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			else{
+				txtName = "txt,d," + entry.getKey().toString();
+				if(tempDirEntry.getType() == 'r'){
+					txtName = "txt,r," + entry.getKey().toString();
+				}
 			}
 			txt.setName(txtName);
 			txt.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -504,7 +644,7 @@ public class FolderListing extends JComponent{
 						
 						String[] temp = txt.getName().split(",");
 						try {
-							parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
+							thisDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
 						} catch (NumberFormatException e1) {
 							ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
 							mainPanel.add(er);
@@ -558,7 +698,7 @@ public class FolderListing extends JComponent{
 		
 		Inode dirInode = null;
 		try {
-			dirInode = parentDir.makeDir(folderName);
+			dirInode = thisDir.makeDir(folderName);
 		} catch (PermissionDeniedException e2) {
 			ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 			mainPanel.add(er);
@@ -597,10 +737,13 @@ public class FolderListing extends JComponent{
 						TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
 						mainPanel.add(txtEdit);*/
 						try {
-							parentDir.editFile(inodeNum);
+							thisDir.editFile(inodeNum);
 						} catch (PermissionDeniedException e1) {
 							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 							mainPanel.add(er);
+							e1.printStackTrace();
+						} catch (FileNotFoundException e1) {
+							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 					}
@@ -678,7 +821,7 @@ public class FolderListing extends JComponent{
 					
 					String[] temp = txt.getName().split(",");
 					try {
-						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
+						thisDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
 					} catch (NumberFormatException e1) {
 						ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
 						mainPanel.add(er);
@@ -698,7 +841,7 @@ public class FolderListing extends JComponent{
 		contentPanelWest.add(columnPanel);
 		contentPanelWest.revalidate();
 	}
-	
+
 	private void createFile(int count){
 		BufferedImage img = null;
 		JButton lbl;
@@ -724,7 +867,7 @@ public class FolderListing extends JComponent{
 		
 		Inode dirInode = null;
 		try {
-			dirInode = parentDir.makeFile(fileName, "");
+			dirInode = thisDir.makeFile(fileName, "");
 		} catch (PermissionDeniedException e2) {
 			ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 			mainPanel.add(er);
@@ -756,15 +899,14 @@ public class FolderListing extends JComponent{
 					}
 					else if(temp[1].equals("r")){
 						int inodeNum = Integer.parseInt(temp[2]);
-						/*Inode tempInode = new Inode(inodeNum);							
-						String fileContent = tempInode.getFileContent();
-						TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
-						mainPanel.add(txtEdit);*/
 						try {
-							parentDir.editFile(inodeNum);
+							thisDir.editFile(inodeNum);
 						} catch (PermissionDeniedException e1) {
 							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 							mainPanel.add(er);
+							e1.printStackTrace();
+						} catch (FileNotFoundException e1) {
+							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 					}
@@ -842,7 +984,7 @@ public class FolderListing extends JComponent{
 					
 					String[] temp = txt.getName().split(",");
 					try {
-						parentDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
+						thisDir.renameFile(Integer.parseInt(temp[2]), txt.getText());
 					} catch (NumberFormatException e1) {
 						ErrorDialog er = new ErrorDialog(mainFrame, "Invalid action!");
 						mainPanel.add(er);
@@ -979,6 +1121,7 @@ public class FolderListing extends JComponent{
 		contentPanelEast.add(consolePanel);
 		contentPanelEast.revalidate();
 	}
+	
 	private JComponent getComponentByName(String componentName){
 		if(componentMap.containsKey(componentName)){
 			return (JComponent) componentMap.get(componentName);

@@ -12,6 +12,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,7 @@ public class GuiStarter {
 	static int copiedInodeNum = 0;
 	static int copyFrom = 0;
 	static int cutInodeNum = 0;	
+	static String linkPath = "";
 	
 	public GuiStarter() {
 		mainFrame = new JFrame("Transparent OS");
@@ -190,101 +192,108 @@ public class GuiStarter {
 		
 		int homeInodeNum = TransSystem.getUser().getHomeDirInodeNum();
 		Directory root = new Directory(2);
-		folderName = root.searchDir(homeInodeNum);
-		
-		
-		JPanel columnPanel = null;
-		columnPanel = new JPanel();
-		columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
-		
-		JPanel pnl = null;
-		pnl = new JPanel();
-		pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
-		pnl.setBorder(new EmptyBorder(10,10,10,10));
-		
-		JTextField txt = new JTextField(folderName);
-		
 		try {
-			img = ImageIO.read(new File("folder.gif"));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
-		lbl = new JButton(new ImageIcon(img));
-		lbl.setBorder(BorderFactory.createEmptyBorder());
-		lbl.setContentAreaFilled(false);
-		String lblName = "lbl,d," + homeInodeNum;
-		lbl.setName(lblName);
-		lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
-		componentMap.put(lblName, lbl);		
-		lbl.addMouseListener(new MouseListener() {
-			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 2){
-					String[] temp = e.getComponent().getName().split(",");
-					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-					if(temp[1].equals("d")){
-						FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
-						mainPanel.add(fldrpane);
-					}
-					else if(temp[1].equals("r")){
-						int inodeNum = Integer.parseInt(temp[2]);
-						try {
-							rootDir.editFile(inodeNum);
-						} catch (PermissionDeniedException e1) {
-							ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
-							mainPanel.add(er);
-							e1.printStackTrace();
+			folderName = root.searchDir(homeInodeNum);
+			JPanel columnPanel = null;
+			columnPanel = new JPanel();
+			columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.Y_AXIS));
+			
+			JPanel pnl = null;
+			pnl = new JPanel();
+			pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
+			pnl.setBorder(new EmptyBorder(10,10,10,10));
+			
+			JTextField txt = new JTextField(folderName);
+			
+			try {
+				img = ImageIO.read(new File("folder.gif"));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
+			lbl = new JButton(new ImageIcon(img));
+			lbl.setBorder(BorderFactory.createEmptyBorder());
+			lbl.setContentAreaFilled(false);
+			String lblName = "lbl,d," + homeInodeNum;
+			lbl.setName(lblName);
+			lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			componentMap.put(lblName, lbl);		
+			lbl.addMouseListener(new MouseListener() {
+				public void mouseClicked(MouseEvent e) {
+					if(e.getClickCount() == 2){
+						String[] temp = e.getComponent().getName().split(",");
+						JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+						if(temp[1].equals("d")){
+							FolderListing fldrpane = new FolderListing(mainFrame,"/" + tempTxt.getText(),Integer.parseInt(temp[2]));
+							mainPanel.add(fldrpane);
+						}
+						else if(temp[1].equals("r")){
+							int inodeNum = Integer.parseInt(temp[2]);
+							try {
+								rootDir.editFile(inodeNum);
+							} catch (PermissionDeniedException e1) {
+								ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
+								mainPanel.add(er);
+								e1.printStackTrace();
+							} catch (FileNotFoundException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 					}
 				}
-			}
-			public void mouseEntered(MouseEvent e) {}
-			public void mouseExited(MouseEvent e) {}
-			public void mousePressed(MouseEvent e) {
-				if(e.isPopupTrigger()){
-					
+				public void mouseEntered(MouseEvent e) {}
+				public void mouseExited(MouseEvent e) {}
+				public void mousePressed(MouseEvent e) {
+					if(e.isPopupTrigger()){
+						
+					}
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if(e.isPopupTrigger()){
-					
+				public void mouseReleased(MouseEvent e) {
+					if(e.isPopupTrigger()){
+						
+					}
 				}
-			}
-		});		
-		lbl.addFocusListener(new FocusListener() {
-			public void focusLost(FocusEvent e) {
-				JButton tempLbl = (JButton)e.getSource();
-				JPanel tempPanel = (JPanel) tempLbl.getParent();
-				tempPanel.setBackground(null);
-				String[] temp = tempLbl.getName().split(",");
-				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-				tempTxt.setBackground(null);
-			}
-			public void focusGained(FocusEvent e) {
-				JButton tempLbl = (JButton)e.getSource();
-				JPanel tempPanel = (JPanel) tempLbl.getParent();
-				tempPanel.setBackground(Color.LIGHT_GRAY);
-				String[] temp = tempLbl.getName().split(",");
-				JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
-				tempTxt.setBackground(Color.LIGHT_GRAY);
-			}
-		});
-		
-		
-		txt.setEnabled(false);
-		txt.setBackground(mainPanel.getBackground());
-		txt.setDisabledTextColor(Color.BLACK);
-		txt.setBorder(null);
-		String txtName = "txt,d," + homeInodeNum;
-		txt.setName(txtName);
-		txt.setAlignmentX(Component.CENTER_ALIGNMENT);
-		componentMap.put(txtName, txt);
-		
-		pnl.add(lbl);
-		pnl.add(txt);
-		columnPanel.add(pnl);
-		contentPanelWest.add(columnPanel);
-		contentPanelWest.revalidate();
+			});		
+			lbl.addFocusListener(new FocusListener() {
+				public void focusLost(FocusEvent e) {
+					JButton tempLbl = (JButton)e.getSource();
+					JPanel tempPanel = (JPanel) tempLbl.getParent();
+					tempPanel.setBackground(null);
+					String[] temp = tempLbl.getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					tempTxt.setBackground(null);
+				}
+				public void focusGained(FocusEvent e) {
+					JButton tempLbl = (JButton)e.getSource();
+					JPanel tempPanel = (JPanel) tempLbl.getParent();
+					tempPanel.setBackground(Color.LIGHT_GRAY);
+					String[] temp = tempLbl.getName().split(",");
+					JTextField tempTxt = (JTextField)getComponentByName("txt,"+temp[1] + "," + temp[2]);
+					tempTxt.setBackground(Color.LIGHT_GRAY);
+				}
+			});
+			
+			
+			txt.setEnabled(false);
+			txt.setBackground(mainPanel.getBackground());
+			txt.setDisabledTextColor(Color.BLACK);
+			txt.setBorder(null);
+			String txtName = "txt,d," + homeInodeNum;
+			txt.setName(txtName);
+			txt.setAlignmentX(Component.CENTER_ALIGNMENT);
+			componentMap.put(txtName, txt);
+			
+			pnl.add(lbl);
+			pnl.add(txt);
+			columnPanel.add(pnl);
+			contentPanelWest.add(columnPanel);
+			contentPanelWest.revalidate();
+		} catch (FileNotFoundException e2) {
+			ErrorDialog er = new ErrorDialog(mainFrame, "Could not locate home folder!!");
+			mainPanel.add(er);
+			e2.printStackTrace();
+		}		
 	}
 	
 	private JComponent getComponentByName(String componentName){
