@@ -477,29 +477,8 @@ public class FolderListing extends JComponent{
 			}
 			else if(tempDirEntry.getType() == 's'){
 				try {
-					Inode i = null;
-					try {
-						i = thisDir.openSoftLink(entry.getKey());
-					} catch (PermissionDeniedException e2) {
-						// TODO Auto-generated catch block
-						e2.printStackTrace();
-					}
-					if(i.getFileType() == 'd'){
-						try {
-							img = ImageIO.read(new File("folder.gif"));
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-					}
-					else if(i.getFileType() == 'r'){
-						try {
-							img = ImageIO.read(new File("folder_light.gif"));
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-					}
-				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
+					img = ImageIO.read(new File("system_shortcut1-1.png"));
+				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
 			}
@@ -507,33 +486,10 @@ public class FolderListing extends JComponent{
 			lbl = new JButton(new ImageIcon(img));
 			lbl.setBorder(BorderFactory.createEmptyBorder());
 			lbl.setContentAreaFilled(false);
-			String lblName = "";
-			if(tempDirEntry.getType() == 's'){
-				try {
-					Inode i = null;
-					try {
-						i = thisDir.openSoftLink(entry.getKey());
-					} catch (PermissionDeniedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					if(i.getFileType() == 'd'){
-						lblName = "lbl,d," + i.getInodeNum();
-					}
-					else if(i.getFileType() == 'r'){
-						lblName = "lbl,r," + i.getInodeNum();
-					}
-				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-			else{
-				lblName = "lbl,d," + entry.getKey().toString();
-				if(tempDirEntry.getType() == 'r'){
-					lblName = "lbl,r," + entry.getKey().toString();
-				}
-			}
+			String lblName = "";			
+			if(tempDirEntry.getType() == 'd') lblName = "lbl,d," + entry.getKey().toString();
+			else if(tempDirEntry.getType() == 'r') lblName = "lbl,r," + entry.getKey().toString();
+			else if(tempDirEntry.getType() == 's') lblName = "lbl,s," + entry.getKey().toString();
 			lbl.setName(lblName);
 			lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			componentMap.put(lblName, lbl);
@@ -550,10 +506,6 @@ public class FolderListing extends JComponent{
 						}
 						else if(temp[1].equals("r")){
 							int inodeNum = Integer.parseInt(temp[2]);
-							/*Inode tempInode = new Inode(inodeNum);							
-							String fileContent = tempInode.getFileContent();
-							TextEditor txtEdit = new TextEditor(mainFrame, fileContent, rootDir, inodeNum);
-							mainPanel.add(txtEdit);*/
 							try {
 								thisDir.editFile(inodeNum);
 							} catch (PermissionDeniedException e1) {
@@ -561,6 +513,28 @@ public class FolderListing extends JComponent{
 								mainPanel.add(er);
 								e1.printStackTrace();
 							} catch (FileNotFoundException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+						else if(temp[1].equals("s")){
+							Inode i = null;
+							try {
+								i = thisDir.openSoftLink(Integer.parseInt(temp[2]));
+								if(i.getFileType() == 'd'){
+									FolderListing fldrpane = new FolderListing(mainFrame,parentPath + "/" + tempTxt.getText(),i.getInodeNum());
+									dialog.dispose();
+									mainPanel.add(fldrpane);
+								}
+								else if(i.getFileType() == 'r'){
+									thisDir.editFile(i.getInodeNum());
+								}
+							} catch (NumberFormatException e1) {
+								e1.printStackTrace();
+							} catch (FileNotFoundException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							} catch (PermissionDeniedException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -609,29 +583,9 @@ public class FolderListing extends JComponent{
 			txt.setDisabledTextColor(Color.BLACK);
 			txt.setBorder(null);
 			String txtName = "";
-			if(tempDirEntry.getType() == 's'){
-				try {
-					Inode i = thisDir.openSoftLink(entry.getKey());
-					if(i.getFileType() == 'd'){
-						txtName = "txt,d," + i.getInodeNum();
-					}
-					else if(i.getFileType() == 'r'){
-						txtName = "txt,r," + i.getInodeNum();
-					}
-				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (PermissionDeniedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-			else{
-				txtName = "txt,d," + entry.getKey().toString();
-				if(tempDirEntry.getType() == 'r'){
-					txtName = "txt,r," + entry.getKey().toString();
-				}
-			}
+			if(tempDirEntry.getType() == 'd') txtName = "txt,d," + entry.getKey().toString();
+			else if(tempDirEntry.getType() == 'r') txtName = "txt,r," + entry.getKey().toString();
+			else if(tempDirEntry.getType() == 's') txtName = "txt,s," + entry.getKey().toString();
 			txt.setName(txtName);
 			txt.setAlignmentX(Component.CENTER_ALIGNMENT);
 			componentMap.put(txtName, txt);
