@@ -54,13 +54,13 @@ public class Directory {
 		}
 	}
 	
-	public Inode makeFile(String fileName, String fileContent) throws PermissionDeniedException {
+	public Inode makeFile(String fileName, String fileContent, char fileType) throws PermissionDeniedException {
 		if(Directory.isWritable(new Inode(this.inodeNum))) {
 			int inodeNum = FreeSpaceMgnt.getInode();
-			Inode newFileInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'r');
+			Inode newFileInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, fileType);
 			newFileInode.writeContent(fileContent);
 			newFileInode.writeToDisk();
-			DirEntry tempDirEntry = new DirEntry(this.cleanseName(fileName), 'r');
+			DirEntry tempDirEntry = new DirEntry(this.cleanseName(fileName), fileType);
 			this.dirContent.put(inodeNum, tempDirEntry);
 			this.writeToDisk();
 			return newFileInode;
@@ -394,11 +394,7 @@ public class Directory {
 		if(Directory.isWritable(new Inode(this.inodeNum))) {
 			String[] pathSplit = targetPath.split("/");
 			String fileName = pathSplit[pathSplit.length - 1];
-			softLinkInode = this.makeFile("shortcut to " + fileName, targetPath);
-			softLinkInode.setFileType('s');
-			softLinkInode.writeToDisk();
-			DirEntry oldSoftLinkEntry = this.dirContent.remove(softLinkInode.getInodeNum());
-			this.dirContent.put(softLinkInode.getInodeNum(), new DirEntry(oldSoftLinkEntry.getName(), 's'));
+			softLinkInode = this.makeFile("shortcut to " + fileName, targetPath, 's');
 			this.writeToDisk();
 		}
 		else

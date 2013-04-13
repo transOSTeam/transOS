@@ -840,7 +840,7 @@ public class FolderListing extends JComponent{
 		
 		Inode dirInode = null;
 		try {
-			dirInode = thisDir.makeFile(fileName, "");
+			dirInode = thisDir.makeFile(fileName, "", 'r');
 		} catch (PermissionDeniedException e2) {
 			ErrorDialog er = new ErrorDialog(mainFrame, "Permission denied!!");
 			mainPanel.add(er);
