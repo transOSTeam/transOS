@@ -60,7 +60,7 @@ public class Directory {
 			Inode newFileInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'r');
 			newFileInode.writeContent(fileContent);
 			newFileInode.writeToDisk();
-			DirEntry tempDirEntry = new DirEntry(fileName, 'r');
+			DirEntry tempDirEntry = new DirEntry(this.cleanseName(fileName), 'r');
 			this.dirContent.put(inodeNum, tempDirEntry);
 			this.writeToDisk();
 			return newFileInode;
@@ -395,8 +395,11 @@ public class Directory {
 			String[] pathSplit = targetPath.split("/");
 			String fileName = pathSplit[pathSplit.length - 1];
 			softLinkInode = this.makeFile("shortcut to " + fileName, targetPath);
+			softLinkInode.setFileType('s');
+			softLinkInode.writeToDisk();
 			DirEntry oldSoftLinkEntry = this.dirContent.remove(softLinkInode.getInodeNum());
 			this.dirContent.put(softLinkInode.getInodeNum(), new DirEntry(oldSoftLinkEntry.getName(), 's'));
+			this.writeToDisk();
 		}
 		else
 			throw new PermissionDeniedException();

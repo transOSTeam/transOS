@@ -382,4 +382,8 @@ public class Inode {
 	public int getHardLinkCount() {
 		return this.hardLinkCount;
 	}
+	public void setFileType(char c) {
+		this.fileType = c;
+		this.isDirty = 1;
+	}
 }
