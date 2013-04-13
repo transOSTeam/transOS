@@ -55,7 +55,7 @@ public class Directory {
 	}
 	
 	public Inode makeFile(String fileName, String fileContent) throws PermissionDeniedException {
-		if(this.isWritable(new Inode(this.inodeNum))) {
+		if(Directory.isWritable(new Inode(this.inodeNum))) {
 			int inodeNum = FreeSpaceMgnt.getInode();
 			Inode newFileInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'r');
 			newFileInode.writeContent(fileContent);
@@ -73,7 +73,7 @@ public class Directory {
 	public void deleteFile(int victimInodeNo) throws PermissionDeniedException {
 		Inode victimInode = new Inode(victimInodeNo);
 		Inode victimsFolder = new Inode(this.inodeNum);
-		if(this.isWritable(victimInode) && this.isWritable(victimsFolder)) {
+		if(Directory.isWritable(victimInode) && Directory.isWritable(victimsFolder)) {
 			if(victimInode.getFileType() == 'd') {
 				Directory victimDir = new Directory(victimInodeNo);
 				int[] tempInode = new int[victimDir.dirContent.size() - 2];
@@ -91,11 +91,12 @@ public class Directory {
 				}
 			}
 			victimInode.hardLinkmm();			//hardLinkCount--
+			victimInode.writeToDisk();
 			if(victimInode.getHardLinkCount() == 0) {
 				victimInode.releaseBlocks();
 				FreeSpaceMgnt.consumeInode(victimInodeNo);
-				this.dirContent.remove(victimInodeNo);
 			}
+			this.dirContent.remove(victimInodeNo);
 			this.writeToDisk();
 		}
 		else
@@ -103,7 +104,7 @@ public class Directory {
 	}
 	
 	public Inode makeDir(String dirName) throws PermissionDeniedException {
-		if(this.isWritable(new Inode(this.inodeNum))) {
+		if(Directory.isWritable(new Inode(this.inodeNum))) {
 			int inodeNum = FreeSpaceMgnt.getInode();
 			Inode newDirInode = new Inode(inodeNum, TransSystem.getUser().getUserId(), TransSystem.getUser().getGrpId(), 6, 4, 4, 'd');
 			String content = "d "+String.format("%03d", newDirInode.getInodeNum())+"\t.\nd "+String.format("%03d", this.inodeNum)+"\t..\n";
@@ -158,7 +159,7 @@ public class Directory {
 	}
 	
 	public HashMap<Integer, DirEntry> getDirContent() throws PermissionDeniedException{
-		if(this.isReadable(new Inode(this.inodeNum))) {
+		if(Directory.isReadable(new Inode(this.inodeNum))) {
 			return this.dirContent;
 		}
 		else {
@@ -171,7 +172,7 @@ public class Directory {
 		Iterator<Entry<Integer, DirEntry>> dirEntriesNavi = this.dirContent.entrySet().iterator();
 		while(dirEntriesNavi.hasNext()) {
 			Map.Entry<Integer, DirEntry> pairs = (Map.Entry<Integer, DirEntry>)dirEntriesNavi.next();
-			if(pairs.getValue().getName() == name) {
+			if(pairs.getValue().getName().compareTo(name) == 0) {
 				inodeNum = pairs.getKey();
 				break;
 			}
@@ -196,7 +197,7 @@ public class Directory {
 	}
 	
 	public void renameFile(int targetInodeNum, String newFileName) throws PermissionDeniedException {
-		if(this.isWritable(new Inode(this.inodeNum))) {
+		if(Directory.isWritable(new Inode(this.inodeNum))) {
 			DirEntry tempEntry = this.dirContent.get(targetInodeNum);
 			this.dirContent.remove(targetInodeNum);
 			this.dirContent.put(targetInodeNum, new DirEntry(this.cleanseName(newFileName), tempEntry.getType()));
@@ -209,7 +210,7 @@ public class Directory {
 	public void copy(int srcFileInode, int sourceDirInode) throws PermissionDeniedException {
 		Inode srcInode = new Inode(srcFileInode);
 		Inode targetDirInode = new Inode(this.inodeNum);
-		if(this.isReadable(srcInode) && this.isWritable(targetDirInode)) {
+		if(Directory.isReadable(srcInode) && Directory.isWritable(targetDirInode)) {
 			Inode targetInode = srcInode.duplicate();
 			if(srcInode.getFileType() == 'd') {
 				Directory victimDir = new Directory(srcFileInode);
@@ -245,7 +246,7 @@ public class Directory {
 	 * 1: execute???
 	 * [User][Group][World]
 	 * */
-	private boolean isReadable(Inode srcInode) {
+	public static boolean isReadable(Inode srcInode) {
 		if(godMode) {
 			return true;
 		}
@@ -265,7 +266,7 @@ public class Directory {
 			return readable;
 		}
 	}
-	private boolean isWritable(Inode srcInode) {
+	public static boolean isWritable(Inode srcInode) {
 		if(godMode) {
 			return true;
 		}
@@ -290,7 +291,7 @@ public class Directory {
 		Inode srcFileI = new Inode(srcFileInode);
 		Inode srcDirI = new Inode(srcDirInode);
 		Inode targetDirInode = new Inode(this.inodeNum);
-		if(this.isReadable(srcFileI) && this.isWritable(srcDirI) && this.isWritable(targetDirInode)) {
+		if(Directory.isReadable(srcFileI) && Directory.isWritable(srcDirI) && Directory.isWritable(targetDirInode)) {
 			this.copy(srcFileInode, srcDirInode);
 			Directory victimParentDir = new Directory(srcDirInode);
 			victimParentDir.deleteFile(srcFileInode);
@@ -301,12 +302,16 @@ public class Directory {
 	
 	public void editFile(int fileInodeNum) throws PermissionDeniedException, FileNotFoundException {
 		Inode fileInode = new Inode(fileInodeNum);
-		if(this.isReadable(fileInode)) {
+		if(Directory.isReadable(fileInode)) {
 			if(fileInode.getFileType() == 'r') {
 				File tempFile = null;
 				String content = fileInode.getFileContent();
 				try {
 					tempFile = new File(Disk.tmpFolder.toString() + "/" + fileInodeNum + ".txt");
+					if(tempFile.exists()) {
+						tempFile.delete();
+						tempFile.createNewFile();
+					}
 					tempFile.deleteOnExit();
 					RandomAccessFile tempRF = new RandomAccessFile(tempFile, "rw");
 					tempRF.writeBytes(content);
@@ -347,10 +352,8 @@ public class Directory {
 		else
 			throw new PermissionDeniedException();
 	}
-	public void makeHardLink(String targetPath) throws FileNotFoundException, OperationNotPermittedException {
+	public void makeHardLink(String targetPath) throws FileNotFoundException, OperationNotPermittedException, PermissionDeniedException {
 		Inode targetInode = this.parsePath(targetPath);
-		targetInode.hardLinkpp();				//hardLinkCount++;
-		targetInode.writeToDisk();
 		
 		String[] splitPath = targetPath.split("/");
 		String name = splitPath[splitPath.length - 1];
@@ -358,33 +361,48 @@ public class Directory {
 			this.searchDir(name);
 			throw new OperationNotPermittedException();
 		} catch(FileNotFoundException e) {
-			this.dirContent.put(targetInode.getInodeNum(), new DirEntry(name, targetInode.getFileType()));
+			if(Directory.isWritable(new Inode(this.inodeNum))) {
+				targetInode.hardLinkpp();				//hardLinkCount++;
+				targetInode.writeToDisk();
+				this.dirContent.put(targetInode.getInodeNum(), new DirEntry(name, targetInode.getFileType()));
+				this.writeToDisk();
+			}
+			else
+				throw new PermissionDeniedException();
 		}
 	}
 
-	private Inode parsePath(String targetPath) throws FileNotFoundException{
+	private Inode parsePath(String targetPath) throws FileNotFoundException, PermissionDeniedException{
 		String[] splitPath = targetPath.split("/");
 		Inode tempInode = new Inode(2);
 		Directory tempDir = new Directory(2);
 		for( String temp : splitPath) {
 			if(temp.compareTo("") != 0) {
-				tempInode = new Inode(tempDir.searchDir(temp));
-				if(tempInode.getFileType() == 'd')
-					tempDir = new Directory(tempInode.getInodeNum());
+				if(Directory.isReadable(tempInode)) {
+					tempInode = new Inode(tempDir.searchDir(temp));
+					if(tempInode.getFileType() == 'd')
+						tempDir = new Directory(tempInode.getInodeNum());
+				}
+				else
+					throw new PermissionDeniedException();
 			}
 		}
 		return tempInode;
 	}
 	public Inode makeSoftLink(String targetPath) throws FileNotFoundException, PermissionDeniedException {
 		Inode softLinkInode = null;
-		String[] pathSplit = targetPath.split("/");
-		String fileName = pathSplit[pathSplit.length - 1];
-		softLinkInode = this.makeFile("shortcut to " + fileName, targetPath);
-		DirEntry oldSoftLinkEntry = this.dirContent.remove(softLinkInode.getInodeNum());
-		this.dirContent.put(softLinkInode.getInodeNum(), new DirEntry(oldSoftLinkEntry.getName(), 's'));
+		if(Directory.isWritable(new Inode(this.inodeNum))) {
+			String[] pathSplit = targetPath.split("/");
+			String fileName = pathSplit[pathSplit.length - 1];
+			softLinkInode = this.makeFile("shortcut to " + fileName, targetPath);
+			DirEntry oldSoftLinkEntry = this.dirContent.remove(softLinkInode.getInodeNum());
+			this.dirContent.put(softLinkInode.getInodeNum(), new DirEntry(oldSoftLinkEntry.getName(), 's'));
+		}
+		else
+			throw new PermissionDeniedException();
 		return softLinkInode;
 	}
-	public Inode openSoftLink(int linkInodeNum) throws FileNotFoundException {			//return targetFile inode: test if dir or file and then do the necessary
+	public Inode openSoftLink(int linkInodeNum) throws FileNotFoundException, PermissionDeniedException {			//return targetFile inode: test if dir or file and then do the necessary
 		Inode linkInode = new Inode(linkInodeNum);
 		String filePath = linkInode.getFileContent();
 		Inode fileInode = this.parsePath(filePath);

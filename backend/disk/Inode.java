@@ -373,9 +373,11 @@ public class Inode {
 	}
 	public void hardLinkpp() {
 		this.hardLinkCount++;
+		this.isDirty = 1;
 	}
 	public void hardLinkmm() {
 		this.hardLinkCount--;
+		this.isDirty = 1;
 	}
 	public int getHardLinkCount() {
 		return this.hardLinkCount;

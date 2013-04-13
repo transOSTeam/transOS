@@ -238,6 +238,10 @@ public class FolderListing extends JComponent{
 						ErrorDialog er = new ErrorDialog(mainFrame, "This operation is not permitted");
 						mainPanel.add(er);
 						e1.printStackTrace();
+					} catch (PermissionDeniedException e1) {
+						ErrorDialog er = new ErrorDialog(mainFrame, "Permission Denied!");
+						mainPanel.add(er);
+						e1.printStackTrace();
 					}
 					thisDir = null;
 					thisDir = new Directory(parentInodeNum);
@@ -473,7 +477,13 @@ public class FolderListing extends JComponent{
 			}
 			else if(tempDirEntry.getType() == 's'){
 				try {
-					Inode i = thisDir.openSoftLink(entry.getKey());
+					Inode i = null;
+					try {
+						i = thisDir.openSoftLink(entry.getKey());
+					} catch (PermissionDeniedException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
 					if(i.getFileType() == 'd'){
 						try {
 							img = ImageIO.read(new File("folder.gif"));
@@ -500,7 +510,13 @@ public class FolderListing extends JComponent{
 			String lblName = "";
 			if(tempDirEntry.getType() == 's'){
 				try {
-					Inode i = thisDir.openSoftLink(entry.getKey());
+					Inode i = null;
+					try {
+						i = thisDir.openSoftLink(entry.getKey());
+					} catch (PermissionDeniedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					if(i.getFileType() == 'd'){
 						lblName = "lbl,d," + i.getInodeNum();
 					}
@@ -603,6 +619,9 @@ public class FolderListing extends JComponent{
 						txtName = "txt,r," + i.getInodeNum();
 					}
 				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (PermissionDeniedException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}

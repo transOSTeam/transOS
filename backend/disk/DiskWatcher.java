@@ -4,6 +4,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileSystem;
@@ -23,30 +24,33 @@ public class DiskWatcher implements Runnable{
 			ws = fs.newWatchService();
 			Path pth = Paths.get(Disk.tmpFolder.getAbsolutePath());
 			pth.register(ws, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-			boolean loop = true;
 			WatchKey wk = null;
+			WatchEvent<?> lastEvent = null;
 			do {
 					wk = ws.take();
 					for(WatchEvent<?> event : wk.pollEvents()) {
-						WatchEvent.Kind<?> kind = event.kind();
-						Path eventPath = (Path) event.context();
-						System.out.println(eventPath.getFileName() + "->" + kind.toString());
-						String fileName = eventPath.getFileName().toString();
-						if(fileName.substring(fileName.length() - 4, fileName.length()).compareTo(".txt") == 0) {
-								RandomAccessFile tempRF = new RandomAccessFile(Disk.tmpFolder.toString() + "/" + eventPath.getFileName(), "r");
-								String newContent = "", buffer;
-								while((buffer = tempRF.readLine()) != null) {
-									newContent += buffer + "\n";
-								}
-								String temp = eventPath.getFileName().toString();
-								Inode fileInode = new Inode(Integer.parseInt(temp.substring(0, temp.length() - 4)));
-								fileInode.writeContent(newContent);
-								fileInode.writeToDisk();
-								tempRF.close();
-							}
+						lastEvent = event;
+					}
+					WatchEvent.Kind<?> kind = lastEvent.kind();
+					System.out.println(kind);
+					Path eventPath = (Path) lastEvent.context();
+					String fileName = eventPath.getFileName().toString();
+					if(fileName.substring(fileName.length() - 4, fileName.length()).compareTo(".txt") == 0) {
+						File f = new File(Disk.tmpFolder.toString() + "/" + eventPath.getFileName());
+						RandomAccessFile tempRF = new RandomAccessFile(f, "r");
+						String newContent = "", buffer;
+						while((buffer = tempRF.readLine()) != null) {
+							newContent += buffer + "\n";
 						}
-					wk.reset();
-			} while(loop);
+						String temp = eventPath.getFileName().toString();
+						Inode fileInode = new Inode(Integer.parseInt(temp.substring(0, temp.length() - 4)));
+						if(Directory.isWritable(fileInode)) {
+							fileInode.writeContent(newContent);
+							fileInode.writeToDisk();
+						}
+						tempRF.close();
+					}
+			} while(wk.reset());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
